@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Jarvis · Terminübersicht</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body {
+    margin:0;
+    padding:0;
+    background:#000;
+    color:#fff;
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  }
+  header{
+    padding:14px 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  main{
+    padding:12px 14px;
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  h2{
+    margin:8px 0 4px;
+    font-size:14px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-gap:8px;
+    margin-bottom:16px;
+  }
+  form input, form textarea{
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.25);
+    background:#080808;
+    color:#fff;
+    font-size:13px;
+  }
+  form textarea{
+    grid-column:1 / span 2;
+    min-height:60px;
+  }
+  button{
+    padding:8px 12px;
+    border-radius:8px;
+    border:none;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:#fff;
+    color:#000;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.4);
+  }
+  .actions{
+    grid-column:1 / span 2;
+    display:flex;
+    gap:8px;
+    justify-content:flex-start;
+  }
+  .info{
+    font-size:11px;
+    color:#aaa;
+    margin-bottom:8px;
+  }
+  .list{
+    border-top:1px solid rgba(255,255,255,0.12);
+    margin-top:8px;
+  }
+  .entry{
+    padding:10px 6px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:13px;
+  }
+  .entry-main{
+    max-width:75%;
+  }
+  .entry-title{
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .entry-meta{
+    font-size:12px;
+    color:#bbb;
+  }
+  .entry-notes{
+    font-size:12px;
+    color:#999;
+    margin-top:4px;
+  }
+  .entry button{
+    font-size:11px;
+    padding:4px 8px;
+  }
+  .empty{
+    font-size:12px;
+    color:#777;
+    padding:8px 0;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>Jarvis · Termine</div>
+  <button class="btn-ghost" onclick="window.close()">Schließen</button>
+</header>
+<main>
+  <h2>Neuen Termin anlegen</h2>
+  <div class="info">
+    Schnellbefehl aus Jarvis:<br>
+    <code style="font-family:monospace;">Termin 21.11.2025 14:00 Meeting mit Kunde X</code>
+  </div>
+  <form id="form">
+    <input type="date" id="date" required>
+    <input type="time" id="time" required>
+    <input type="text" id="title" placeholder="Titel (z.B. Kundentermin)" required>
+    <input type="text" id="location" placeholder="Ort (optional)">
+    <textarea id="notes" placeholder="Notizen (optional)"></textarea>
+    <div class="actions">
+      <button type="submit" class="btn-primary">Speichern</button>
+      <button type="button" class="btn-ghost" onclick="clearForm()">Reset</button>
+    </div>
+  </form>
+
+  <h2>Kommende Termine</h2>
+  <div id="list" class="list"></div>
+</main>
+
+<script>
+function loadAppointments(){
+  return JSON.parse(localStorage.getItem("appointments") || "[]");
+}
+function saveAppointments(list){
+  localStorage.setItem("appointments", JSON.stringify(list));
+}
+function clearForm(){
+  document.getElementById("form").reset();
+}
+
+function renderList(){
+  const listEl = document.getElementById("list");
+  const data = loadAppointments().sort((a,b)=>{
+    const ad = a.date + " " + a.time;
+    const bd = b.date + " " + b.time;
+    return ad.localeCompare(bd);
+  });
+
+  if(data.length === 0){
+    listEl.innerHTML = '<div class="empty">Keine Termine gespeichert.</div>';
+    return;
+  }
+
+  listEl.innerHTML = "";
+  const nowIso = new Date().toISOString();
+
+  data.forEach((t, idx)=>{
+    const dIso = t.date + "T" + (t.time || "00:00") + ":00";
+    const isPast = dIso < nowIso;
+
+    const div = document.createElement("div");
+    div.className = "entry";
+    if(isPast) div.style.opacity = 0.6;
+
+    div.innerHTML = `
+      <div class="entry-main">
+        <div class="entry-title">${t.title}</div>
+        <div class="entry-meta">${t.date} · ${t.time || ""} · ${t.location || ""}</div>
+        ${t.notes ? `<div class="entry-notes">${t.notes}</div>` : ""}
+      </div>
+      <div>
+        <button class="btn-ghost" onclick="deleteAppt(${idx})">Löschen</button>
+      </div>
+    `;
+    listEl.appendChild(div);
+  });
+}
+
+function deleteAppt(index){
+  const data = loadAppointments();
+  data.splice(index, 1);
+  saveAppointments(data);
+  renderList();
+}
+
+document.getElementById("form").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const title = document.getElementById("title").value.trim();
+  const location = document.getElementById("location").value.trim();
+  const notes = document.getElementById("notes").value.trim();
+
+  if(!date || !time || !title) return;
+
+  const list = loadAppointments();
+  list.push({date, time, title, location, notes});
+  saveAppointments(list);
+  clearForm();
+  renderList();
+});
+
+renderList();
+</script>
+</body>
+</html>
