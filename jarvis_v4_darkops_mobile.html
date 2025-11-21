@@ -300,8 +300,16 @@ let mem = {
   lastHours: null,
   lastRate: 140,
   lastProject: null,
-  lastCommand: null   // <— Erweiterung, bricht nichts
+  lastCommand: null
 };
+
+/* ==========================================================
+   HELPER: SEITENÖFFNUNG
+   ========================================================== */
+function openModule(file){
+  // immer im selben Tab
+  window.location.href = file;
+}
 
 /* ==========================================================
    PARSER ENGINE — DARKOPS MODE
@@ -310,48 +318,108 @@ function parse(cmd) {
 
   mem.lastCommand = cmd;
 
+  /* --- HELP --- */
+  if (cmd === "help" || cmd === "hilfe" || cmd === "?" || cmd === "commands") {
+    ops(
+`AVAILABLE COMMANDS:
+- rechnung → opens rechnung.html
+- angebot → opens angebot.html
+- projekt / großprojekt → opens projekt.html
+- kunden / kundenmodul → opens kundenanlegen.html
+- lager / lagerbestand → opens lagerbestand.html
+- spesen / reisekosten → opens spesen.html
+- mahnung / mahnwesen → opens mahnwesen.html
+- zeit / zeiterfassung / time track → opens zeit.html
+- kalender / termine → opens termine.html
+- umsatz / dashboard → opens umsatz.html
+- suche / search → opens search.html
+- launcher / home / start → opens index.html
+- termin DD.MM.YYYY HH:MM Titel → create appointment
+- umsatz 1200 für kundeX → add revenue
+- kunde NAME → create client in DB`
+    );
+    return;
+  }
+
   /* --- Greeting --- */
   if(cmd.includes("hallo") || cmd.includes("hi") || cmd.includes("servus")) {
     ops("UNIT JARVIS-V4 ONLINE.\nAwaiting next directive, Commander AICHMAYR.");
     return;
   }
 
-  /* --- Auftrag / Task / Stunden --- */
-  if(cmd.includes("auftrag") || cmd.includes("task") || cmd.includes("stunden")) {
-
-    let hoursMatch = cmd.match(/\d+/);
-    if(hoursMatch) mem.lastHours = parseInt(hoursMatch[0]);
-
-    ops(
-`UNIT: JARVIS-V4
-TASK DETECTED
-HOURS: ${mem.lastHours || "NOT SPECIFIED"}
-RATE: ${mem.lastRate} €/h
-STATUS: OPENING OFFER MODULE`
-    );
-
-    setTimeout(() => window.open("angebot.html"), 600);
+  /* --- LAUNCHER / HOME --- */
+  if (cmd.includes("launcher") || cmd === "home" || cmd === "start" || cmd.includes("hauptmenü")) {
+    ops("Opening main launcher…");
+    setTimeout(() => openModule("index.html"), 400);
     return;
   }
 
   /* --- Rechnung öffnen --- */
   if(cmd.includes("rechnung")) {
     ops("Opening invoice module…");
-    setTimeout(() => window.open("rechnung.html"), 600);
+    setTimeout(() => openModule("rechnung.html"), 400);
     return;
   }
 
   /* --- Angebot öffnen --- */
   if(cmd.includes("angebot")) {
     ops("Opening offer module…");
-    setTimeout(() => window.open("angebot.html"), 600);
+    setTimeout(() => openModule("angebot.html"), 400);
+    return;
+  }
+
+  /* --- Projekt / Großprojekt --- */
+  if (cmd.includes("projekt") || cmd.includes("großprojekt")) {
+    ops("Opening project module…");
+    setTimeout(() => openModule("projekt.html"), 400);
+    return;
+  }
+
+  /* --- Kundenmodul öffnen --- */
+  if (cmd === "kunden" ||
+      cmd.includes("kundenmodul") ||
+      cmd.includes("kunden modul") ||
+      cmd.includes("kundenübersicht")) {
+    ops("Opening client module…");
+    setTimeout(() => openModule("kundenanlegen.html"), 400);
+    return;
+  }
+
+  /* --- Lager / Lagerbestand --- */
+  if (cmd.includes("lager") || cmd.includes("lagerbestand")) {
+    ops("Opening inventory module…");
+    setTimeout(() => openModule("lagerbestand.html"), 400);
+    return;
+  }
+
+  /* --- Spesen / Reisekosten --- */
+  if (cmd.includes("spesen") || cmd.includes("reisekosten")) {
+    ops("Opening expense module…");
+    setTimeout(() => openModule("spesen.html"), 400);
+    return;
+  }
+
+  /* --- Mahnwesen --- */
+  if (cmd.includes("mahnung") || cmd.includes("mahnwesen")) {
+    ops("Opening dunning module…");
+    setTimeout(() => openModule("mahnwesen.html"), 400);
+    return;
+  }
+
+  /* --- Zeiterfassung / Time Track --- */
+  if (cmd.includes("zeiterfassung") ||
+      cmd.includes("time track") ||
+      cmd === "zeit" ||
+      cmd.includes("stundenerfassung")) {
+    ops("Opening time tracking module…");
+    setTimeout(() => openModule("zeit.html"), 400);
     return;
   }
 
   /* --- Kalender öffnen --- */
   if (cmd.includes("kalender") || cmd.includes("termine anzeigen") || (cmd.includes("termin") && !cmd.startsWith("termin "))) {
     ops("UNIT: JARVIS-V4 — Opening calendar module.");
-    setTimeout(() => window.open("termine.html"), 600);
+    setTimeout(() => openModule("termine.html"), 400);
     return;
   }
 
@@ -374,17 +442,70 @@ STATUS: OPENING OFFER MODULE`
     return;
   }
 
-  /* --- Umsatz abrufen --- */
-  if(cmd.includes("umsatz") || cmd.includes("revenue")) {
-    let data = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
-    let sum  = data.reduce((s,x)=>s + Number(x.amount||0), 0);
-    ops(`REVENUE STATUS:\nTOTAL: € ${sum.toFixed(2)}`);
+  /* --- Umsatz-Dashboard öffnen --- */
+  if(cmd.includes("umsatz") || cmd.includes("revenue") || cmd.includes("dashboard")) {
+    // Wenn nur Status gefragt → Status + optionales Öffnen
+    if (cmd.includes("status")) {
+      let data = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+      let sum  = data.reduce((s,x)=>s + Number(x.amount||0), 0);
+      ops(`REVENUE STATUS:\nTOTAL: € ${sum.toFixed(2)}\nOpening dashboard…`);
+    } else {
+      ops("Opening revenue dashboard…");
+    }
+    setTimeout(() => openModule("umsatz.html"), 400);
     return;
   }
 
-  /* --- Kunden anlegen --- */
-  if(cmd.startsWith("kunde") || cmd.startsWith("new client")) {
-    let name = cmd.replace("kunde","").replace("new client","").trim();
+  /* --- SEARCH / SUCHE --- */
+  if (cmd.includes("search") || cmd.includes("suche") || cmd.includes("finden")) {
+    ops("Opening search module…");
+    setTimeout(() => openModule("search.html"), 400);
+    return;
+  }
+
+  /* --- Auftrag / Task / Stunden (öffnet Angebot) --- */
+  if(cmd.includes("auftrag") || cmd.includes("task") || cmd.includes("stunden")) {
+
+    let hoursMatch = cmd.match(/\d+/);
+    if(hoursMatch) mem.lastHours = parseInt(hoursMatch[0]);
+
+    ops(
+`UNIT: JARVIS-V4
+TASK DETECTED
+HOURS: ${mem.lastHours || "NOT SPECIFIED"}
+RATE: ${mem.lastRate} €/h
+STATUS: OPENING OFFER MODULE`
+    );
+
+    setTimeout(() => openModule("angebot.html"), 600);
+    return;
+  }
+
+  /* --- Kunden in DB anlegen via 'kunde NAME' --- */
+  if(cmd.startsWith("kunde ")) {
+    let name = cmd.replace("kunde","").trim();
+    if(!name){ ops("Specify client name."); return; }
+
+    let db = JSON.parse(localStorage.getItem("db_clients") || "[]");
+    let id = "C" + Math.floor(Math.random()*99999);
+
+    db.push({ id, name, address:"", email:"", phone:"", umsatz:0 });
+    localStorage.setItem("db_clients", JSON.stringify(db));
+
+    mem.lastClient = name;
+
+    ops(
+`UNIT: JARVIS-V4
+CLIENT REGISTERED
+TARGET: ${name}
+ID: ${id}`
+    );
+    return;
+  }
+
+  /* --- auch englisches 'new client NAME' --- */
+  if(cmd.startsWith("new client")) {
+    let name = cmd.replace("new client","").trim();
     if(!name){ ops("Specify client name."); return; }
 
     let db = JSON.parse(localStorage.getItem("db_clients") || "[]");
@@ -419,14 +540,14 @@ ID: ${id}`
     return;
   }
 
-  /* --- CSV Export --- */
+  /* --- CSV Export der Umsätze --- */
   if(cmd.includes("export") && cmd.includes("csv")) {
     exportCSV();
     return;
   }
 
   /* --- Fallback --- */
-  ops("COMMAND NOT RECOGNIZED.\nAwaiting further directives.");
+  ops("COMMAND NOT RECOGNIZED.\nType 'help' for available commands.");
 }
 
 /* =============================================================================
@@ -563,12 +684,9 @@ READY FOR NEXT DIRECTIVE`
 
 /* Kurzer Reminder für iOS: Add to Home Screen */
 setTimeout(()=>{
-  ops("HINT: On iOS Safari → Share → 'Add to Home Screen' to pin JARVIS as App.");
+  ops("HINT: On iOS Safari → Share → 'Add to Home Screen' to pin JARVIS as App. Type 'help' for all commands.");
 }, 2000);
 </script>
 
 </body>
 </html>
-
-
-
