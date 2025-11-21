@@ -299,13 +299,16 @@ let mem = {
   lastClient: null,
   lastHours: null,
   lastRate: 140,
-  lastProject: null
+  lastProject: null,
+  lastCommand: null   // <— Erweiterung, bricht nichts
 };
 
 /* ==========================================================
    PARSER ENGINE — DARKOPS MODE
    ========================================================== */
 function parse(cmd) {
+
+  mem.lastCommand = cmd;
 
   /* --- Greeting --- */
   if(cmd.includes("hallo") || cmd.includes("hi") || cmd.includes("servus")) {
@@ -320,10 +323,10 @@ function parse(cmd) {
     if(hoursMatch) mem.lastHours = parseInt(hoursMatch[0]);
 
     ops(
-`UNIT: JARVIS-V4 
-TASK DETECTED 
-HOURS: ${mem.lastHours || "NOT SPECIFIED"} 
-RATE: ${mem.lastRate} €/h 
+`UNIT: JARVIS-V4
+TASK DETECTED
+HOURS: ${mem.lastHours || "NOT SPECIFIED"}
+RATE: ${mem.lastRate} €/h
 STATUS: OPENING OFFER MODULE`
     );
 
@@ -342,6 +345,32 @@ STATUS: OPENING OFFER MODULE`
   if(cmd.includes("angebot")) {
     ops("Opening offer module…");
     setTimeout(() => window.open("angebot.html"), 600);
+    return;
+  }
+
+  /* --- Kalender öffnen --- */
+  if (cmd.includes("kalender") || cmd.includes("termine anzeigen") || (cmd.includes("termin") && !cmd.startsWith("termin "))) {
+    ops("UNIT: JARVIS-V4 — Opening calendar module.");
+    setTimeout(() => window.open("termine.html"), 600);
+    return;
+  }
+
+  /* --- Termin anlegen aus Text ---
+     Pattern: 'Termin 21.11.2025 14:00 Meeting mit Kunde X' */
+  if (cmd.startsWith("termin ")) {
+    const m = cmd.match(/termin\s+(\d{1,2}\.\d{1,2}\.\d{4})\s+(\d{1,2}:\d{2})\s+(.+)/i);
+    if (!m) {
+      ops("PATTERN: 'Termin 21.11.2025 14:00 Meeting mit Kunde X'");
+      return;
+    }
+    const dateStr = m[1];   // dd.mm.yyyy
+    const timeStr = m[2];   // hh:mm
+    const titleStr = m[3];  // Rest als Titel
+
+    const parts = dateStr.split(".");
+    const isoDate = parts[2] + "-" + parts[1].padStart(2,"0") + "-" + parts[0].padStart(2,"0");
+
+    addAppointmentFromJarvis(isoDate, timeStr, titleStr);
     return;
   }
 
@@ -367,9 +396,9 @@ STATUS: OPENING OFFER MODULE`
     mem.lastClient = name;
 
     ops(
-`UNIT: JARVIS-V4 
-CLIENT REGISTERED 
-TARGET: ${name} 
+`UNIT: JARVIS-V4
+CLIENT REGISTERED
+TARGET: ${name}
 ID: ${id}`
     );
     return;
@@ -420,9 +449,9 @@ function addRevenue(amount, client="UNKNOWN", project="OPS") {
   localStorage.setItem("umsatzListe", JSON.stringify(list));
 
   ops(
-`REVENUE REGISTERED 
-CLIENT: ${client} 
-PROJECT: ${project} 
+`REVENUE REGISTERED
+CLIENT: ${client}
+PROJECT: ${project}
 AMOUNT: € ${Number(amount).toFixed(2)}`
   );
 }
@@ -482,6 +511,28 @@ function updateClient(name, field, value) {
 }
 
 /* ==========================================================
+   APPOINTMENTS SUPPORT (aus Jarvis-Befehlen)
+   ========================================================== */
+function addAppointmentFromJarvis(date, time, title) {
+  let list = JSON.parse(localStorage.getItem("appointments") || "[]");
+  list.push({
+    date: date,
+    time: time,
+    title: title,
+    location: "",
+    notes: "Aus Jarvis-Befehl erstellt."
+  });
+  localStorage.setItem("appointments", JSON.stringify(list));
+
+  ops(
+`APPOINTMENT REGISTERED
+DATE: ${date}
+TIME: ${time}
+TITLE: ${title}`
+  );
+}
+
+/* ==========================================================
    MISSION LOGS (Simple Event Logger)
    ========================================================== */
 function logMission(event, detail="") {
@@ -502,11 +553,11 @@ function logMission(event, detail="") {
    INITIAL BOOT MESSAGE
    ========================================================== */
 ops(
-`UNIT: JARVIS-V4 
-CHANNEL: OPS-01 
-STATUS: ONLINE 
-MODE: DARKOPS MOBILE 
-COMMANDER: AICHMAYR 
+`UNIT: JARVIS-V4
+CHANNEL: OPS-01
+STATUS: ONLINE
+MODE: DARKOPS MOBILE
+COMMANDER: AICHMAYR
 READY FOR NEXT DIRECTIVE`
 );
 
@@ -518,5 +569,6 @@ setTimeout(()=>{
 
 </body>
 </html>
+
 
 
