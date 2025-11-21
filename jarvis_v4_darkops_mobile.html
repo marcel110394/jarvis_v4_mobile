@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>JARVIS-V4 · OPS-01 · DARKOPS MOBILE</title>
+
+<!-- Mobile / iPhone App Modus -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Jarvis V4">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="/mnt/data/A_digital_vector_image_presents_a_circular_logo_wi.png">
+
+<style>
+/* ============================================
+   JARVIS V4 — DARKOPS GLOBAL THEME (MOBILE)
+   Commander: AICHMAYR
+   Mode: Black Tactical Interface
+   ============================================ */
+
+/* GLOBAL */
+html, body {
+  margin:0;
+  padding:0;
+  background:#000;
+  color:#fff;
+  font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  height:100%;
+  overflow:hidden;
+}
+
+/* iOS 100vh Fix */
+@supports (height: 100dvh) {
+  body {
+    height:100dvh;
+  }
+}
+
+/* SCROLLBAR (STEALTH) */
+::-webkit-scrollbar { width:8px; }
+::-webkit-scrollbar-track { background:#000; }
+::-webkit-scrollbar-thumb { background:#222; border-radius:4px; }
+
+/* HEADER — DARKOPS PATCH + OPERATOR INFO */
+header {
+  padding:16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  background:#000;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex;
+  align-items:center;
+  gap:16px;
+  height:72px;
+  box-shadow:0 0 18px rgba(0,0,0,0.85);
+}
+
+/* DARKOPS PATCH */
+header img {
+  height:54px;
+  width:54px;
+  border-radius:50%;
+  background:#000;
+  border:2px solid #ffffff;
+  object-fit:cover;
+}
+
+/* OPERATOR TEXT */
+header .unitBlock {
+  display:flex;
+  flex-direction:column;
+}
+
+header .unitMain {
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:#ffffff;
+  text-transform:uppercase;
+}
+
+header .unitSub {
+  font-size:11px;
+  color:#ccc;
+  letter-spacing:1.2px;
+  margin-top:2px;
+  text-transform:uppercase;
+}
+
+/* CHAT WINDOW */
+#chat {
+  position:absolute;
+  top: calc(72px + env(safe-area-inset-top));
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  left:0;
+  right:0;
+  overflow-y:auto;
+  padding:16px;
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  scroll-behavior:smooth;
+}
+
+/* CHAT BUBBLES */
+.msg {
+  max-width:80%;
+  padding:12px 14px;
+  margin:8px 0;
+  border-radius:12px;
+  font-size:14px;
+  line-height:1.45;
+  border:1px solid rgba(255,255,255,0.1);
+  animation:fade .25s ease;
+}
+
+.msg.jarvis {
+  background:#0a0a0a;
+  color:#e5e5e5;
+}
+
+.msg.user {
+  margin-left:auto;
+  background:#111;
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+@keyframes fade {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* INPUT BAR */
+#inputBox {
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  padding:12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  background:#000;
+  border-top:1px solid rgba(255,255,255,0.05);
+  display:flex;
+  gap:8px;
+}
+
+input {
+  flex:1;
+  padding:10px 12px;
+  background:#0d0d0d;
+  border:1px solid rgba(255,255,255,0.2);
+  color:#fff;
+  border-radius:10px;
+  font-size:15px;
+}
+
+/* Mobile Button etwas größer */
+button {
+  padding:10px 16px;
+  background:#fff;
+  color:#000;
+  border:none;
+  font-weight:700;
+  border-radius:10px;
+  cursor:pointer;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  font-size:13px;
+}
+
+/* TYPING INDICATOR */
+#typing {
+  position:absolute;
+  bottom: calc(58px + env(safe-area-inset-bottom));
+  left:18px;
+  font-size:12px;
+  color:#777;
+  opacity:0.7;
+  display:none;
+}
+
+/* BOOT ANIMATION (optional) */
+@keyframes bootGlow {
+  0% { opacity:0; letter-spacing:-2px; }
+  100% { opacity:1; letter-spacing:2px; }
+}
+
+.bootScreen {
+  position:absolute;
+  inset:0;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:18px;
+  font-weight:700;
+  animation:bootGlow 1s ease forwards;
+  z-index:999;
+  text-align:center;
+  padding:0 20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- BOOTSCREEN -->
+<div id="boot" class="bootScreen">
+  JARVIS V4 · DARKOPS MOBILE<br>
+  INITIALIZING OPS-01 CHANNEL
+</div>
+
+<header>
+  <!-- DarkOps Patch -->
+  <img src="/mnt/data/A_digital_vector_image_presents_a_circular_logo_wi.png" alt="Aichmayr Patch">
+
+  <div class="unitBlock">
+    <div class="unitMain">UNIT: JARVIS-V4 · CHANNEL: OPS-01</div>
+    <div class="unitSub">Commander: Aichmayr</div>
+  </div>
+</header>
+
+<div id="chat"></div>
+<div id="typing">UNIT JARVIS-V4: Processing…</div>
+
+<div id="inputBox">
+  <input id="input" placeholder="Awaiting next directive, Commander…">
+  <button onclick="send()">Send</button>
+</div>
+
+<script>
+/* ==========================================================
+   JARVIS V4 — DARKOPS CORE ENGINE (MOBILE)
+   Messaging · Parser · Memory · Tactical Responses
+   ========================================================== */
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const typing = document.getElementById("typing");
+const bootScreen = document.getElementById("boot");
+
+/* Bootscreen ausblenden */
+setTimeout(() => {
+  if (bootScreen) bootScreen.style.display = "none";
+}, 1100);
+
+/* Basic double-tap zoom prevention (iOS) */
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);
+
+/* ========== OUTPUT ========= */
+function log(msg, sender="jarvis") {
+  const div = document.createElement("div");
+  div.className = "msg " + sender;
+  div.innerHTML = msg.replace(/\n/g, "<br>");
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* ========== JARVIS OPS-RESPONSE ========== */
+function ops(msg, delay=400) {
+  typing.style.display = "block";
+  setTimeout(()=>{
+    typing.style.display = "none";
+    log(msg, "jarvis");
+  }, delay);
+}
+
+/* ========== SEND ========== */
+function send() {
+  const txt = input.value.trim();
+  if(!txt) return;
+
+  log(txt, "user");
+  input.value = "";
+  parse(txt.toLowerCase());
+}
+
+/* ENTER auf Mobile/Keyboard */
+input.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") {
+    e.preventDefault();
+    send();
+  }
+});
+
+/* ==========================================================
+   MEMORY ENGINE
+   ========================================================== */
+let mem = {
+  lastClient: null,
+  lastHours: null,
+  lastRate: 140,
+  lastProject: null
+};
+
+/* ==========================================================
+   PARSER ENGINE — DARKOPS MODE
+   ========================================================== */
+function parse(cmd) {
+
+  /* --- Greeting --- */
+  if(cmd.includes("hallo") || cmd.includes("hi") || cmd.includes("servus")) {
+    ops("UNIT JARVIS-V4 ONLINE.\nAwaiting next directive, Commander AICHMAYR.");
+    return;
+  }
+
+  /* --- Auftrag / Task / Stunden --- */
+  if(cmd.includes("auftrag") || cmd.includes("task") || cmd.includes("stunden")) {
+
+    let hoursMatch = cmd.match(/\d+/);
+    if(hoursMatch) mem.lastHours = parseInt(hoursMatch[0]);
+
+    ops(
+`UNIT: JARVIS-V4 
+TASK DETECTED 
+HOURS: ${mem.lastHours || "NOT SPECIFIED"} 
+RATE: ${mem.lastRate} €/h 
+STATUS: OPENING OFFER MODULE`
+    );
+
+    setTimeout(() => window.open("angebot.html"), 600);
+    return;
+  }
+
+  /* --- Rechnung öffnen --- */
+  if(cmd.includes("rechnung")) {
+    ops("Opening invoice module…");
+    setTimeout(() => window.open("rechnung.html"), 600);
+    return;
+  }
+
+  /* --- Angebot öffnen --- */
+  if(cmd.includes("angebot")) {
+    ops("Opening offer module…");
+    setTimeout(() => window.open("angebot.html"), 600);
+    return;
+  }
+
+  /* --- Umsatz abrufen --- */
+  if(cmd.includes("umsatz") || cmd.includes("revenue")) {
+    let data = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+    let sum  = data.reduce((s,x)=>s + Number(x.amount||0), 0);
+    ops(`REVENUE STATUS:\nTOTAL: € ${sum.toFixed(2)}`);
+    return;
+  }
+
+  /* --- Kunden anlegen --- */
+  if(cmd.startsWith("kunde") || cmd.startsWith("new client")) {
+    let name = cmd.replace("kunde","").replace("new client","").trim();
+    if(!name){ ops("Specify client name."); return; }
+
+    let db = JSON.parse(localStorage.getItem("db_clients") || "[]");
+    let id = "C" + Math.floor(Math.random()*99999);
+
+    db.push({ id, name, address:"", email:"", phone:"", umsatz:0 });
+    localStorage.setItem("db_clients", JSON.stringify(db));
+
+    mem.lastClient = name;
+
+    ops(
+`UNIT: JARVIS-V4 
+CLIENT REGISTERED 
+TARGET: ${name} 
+ID: ${id}`
+    );
+    return;
+  }
+
+  /* --- Umsatz hinzufügen (z.B. 'umsatz 1200 für acme') --- */
+  if(cmd.startsWith("umsatz ")) {
+    const numMatch = cmd.match(/umsatz\s+(\d+(\.\d+)?)/);
+    let amount = numMatch ? Number(numMatch[1]) : null;
+    let parts = cmd.split("für");
+    let client = parts[1] ? parts[1].trim() : (mem.lastClient || "UNKNOWN");
+
+    if(amount) {
+      addRevenue(amount, client, "OPS");
+    } else {
+      ops("NO VALID AMOUNT DETECTED.");
+    }
+    return;
+  }
+
+  /* --- CSV Export --- */
+  if(cmd.includes("export") && cmd.includes("csv")) {
+    exportCSV();
+    return;
+  }
+
+  /* --- Fallback --- */
+  ops("COMMAND NOT RECOGNIZED.\nAwaiting further directives.");
+}
+
+/* =============================================================================
+   BACKOFFICE ENGINE — Umsatztracking · CSV-Backup · Client-DB · Mission Logs
+   ============================================================================= */
+
+/* ==========================================================
+   UMSATZ-TRACKING SYSTEM
+   ========================================================== */
+function addRevenue(amount, client="UNKNOWN", project="OPS") {
+  let list = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+
+  list.push({
+    amount: Number(amount),
+    client: client,
+    project: project,
+    date: new Date().toISOString()
+  });
+
+  localStorage.setItem("umsatzListe", JSON.stringify(list));
+
+  ops(
+`REVENUE REGISTERED 
+CLIENT: ${client} 
+PROJECT: ${project} 
+AMOUNT: € ${Number(amount).toFixed(2)}`
+  );
+}
+
+/* ==========================================================
+   CSV BACKUP EXPORT
+   ========================================================== */
+function exportCSV() {
+  let data = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+
+  if(data.length === 0) {
+    ops("NO DATA AVAILABLE FOR EXPORT.");
+    return;
+  }
+
+  let header = "amount,client,project,date\n";
+  let rows = data.map(r =>
+    `${r.amount},${r.client},${r.project},${r.date}`
+  ).join("\n");
+
+  let csv = header + rows;
+  let blob = new Blob([csv], {type:"text/csv"});
+  let a = document.createElement("a");
+
+  a.href = URL.createObjectURL(blob);
+  a.download = "jarvis_umsatz_backup.csv";
+  a.click();
+
+  ops("CSV EXPORT COMPLETE.");
+}
+
+/* ==========================================================
+   CLIENT DATABASE SUPPORT
+   ========================================================== */
+function getClients() {
+  return JSON.parse(localStorage.getItem("db_clients") || "[]");
+}
+
+function findClient(name) {
+  let db = getClients();
+  return db.find(c => c.name.toLowerCase() === name.toLowerCase());
+}
+
+function updateClient(name, field, value) {
+  let db = getClients();
+  let c = db.find(x => x.name.toLowerCase() === name.toLowerCase());
+
+  if(!c) {
+    ops("CLIENT NOT FOUND.");
+    return;
+  }
+
+  c[field] = value;
+  localStorage.setItem("db_clients", JSON.stringify(db));
+
+  ops(`CLIENT UPDATED:\n${name}\n${field} → ${value}`);
+}
+
+/* ==========================================================
+   MISSION LOGS (Simple Event Logger)
+   ========================================================== */
+function logMission(event, detail="") {
+  let logs = JSON.parse(localStorage.getItem("missionLogs") || "[]");
+
+  logs.push({
+    event,
+    detail,
+    time: new Date().toISOString()
+  });
+
+  localStorage.setItem("missionLogs", JSON.stringify(logs));
+
+  ops(`MISSION LOGGED: ${event}`);
+}
+
+/* ==========================================================
+   INITIAL BOOT MESSAGE
+   ========================================================== */
+ops(
+`UNIT: JARVIS-V4 
+CHANNEL: OPS-01 
+STATUS: ONLINE 
+MODE: DARKOPS MOBILE 
+COMMANDER: AICHMAYR 
+READY FOR NEXT DIRECTIVE`
+);
+
+/* Kurzer Reminder für iOS: Add to Home Screen */
+setTimeout(()=>{
+  ops("HINT: On iOS Safari → Share → 'Add to Home Screen' to pin JARVIS as App.");
+}, 2000);
+</script>
+
+</body>
+</html>
+
+

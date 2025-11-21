@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aichmayr Technology · Angebots-Generator</title>
+
+<style>
+  :root { --pad: 14px; --border: 1px solid #ccc; --maxw: 980px; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#f6f7f9; }
+  header { background:#111; color:#fff; padding: 14px 20px; }
+  header h1 { margin:0; font-size: 18px; }
+  main { max-width: var(--maxw); margin: 20px auto; padding: 0 12px 40px; }
+  .card { background:#fff; border: var(--border); border-radius: 10px; padding: var(--pad); box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+  .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 10px; }
+  .col-12{grid-column: span 12;} .col-6{grid-column: span 6;} .col-4{grid-column: span 4;} .col-3{grid-column: span 3;}
+  label { display:block; font-size: 12px; color:#444; margin-bottom: 4px; }
+  input, textarea, select { width: 100%; padding:10px; border: var(--border); border-radius:8px; font-size:14px; }
+  textarea { min-height: 70px; }
+  table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 14px; }
+  th, td { border: var(--border); padding:8px; text-align:left; vertical-align: top;}
+  tfoot td { font-weight: 600; }
+  button { padding:10px 14px; border-radius:8px; border:1px solid #111; background:#111; color:#fff; cursor:pointer; }
+  button.secondary{ background:#fff; color:#111; }
+  .actions { display:flex; gap:10px; margin:14px 0; flex-wrap:wrap; }
+  .preview { background:#fff; padding: var(--pad); border: var(--border); border-radius: 10px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#f3f4f6; padding:2px 5px; border-radius:4px; }
+  @media print {
+    header, .controls { display:none !important; }
+    body { background:#fff; }
+    main { margin:0; padding:0; max-width:100%; }
+    .preview { border:none; box-shadow:none; }
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Aichmayr Technology · Angebots-Generator</h1>
+</header>
+
+<main>
+
+<section class="card controls">
+  <div class="grid">
+
+    <div class="col-6">
+      <label>Aussteller (Name / Firma)</label>
+      <input id="issuer" placeholder="Marcel Aichmayr · Aichmayr Technology">
+    </div>
+
+    <div class="col-6">
+      <label>Adresse Aussteller</label>
+      <input id="issuerAddr" placeholder="Straße, PLZ Ort, Land">
+    </div>
+
+    <div class="col-4">
+      <label>IBAN (optional)</label>
+      <input id="iban" placeholder="AT..">
+    </div>
+
+    <div class="col-4">
+      <label>BIC (optional)</label>
+      <input id="bic" placeholder="BIC">
+    </div>
+
+    <div class="col-4">
+      <label>E-Mail / Telefon</label>
+      <input id="contact" placeholder="mail@domain.at · +43 ...">
+    </div>
+
+    <div class="col-6">
+      <label>Web</label>
+      <input id="web" placeholder="https://aichmayr-technology.com">
+    </div>
+
+    <div class="col-6">
+      <label>Kunde / Empfänger</label>
+      <input id="client" placeholder="Firma / Name">
+    </div>
+
+    <div class="col-6">
+      <label>Adresse Empfänger</label>
+      <input id="clientAddr" placeholder="Straße, PLZ Ort, Land">
+    </div>
+
+    <div class="col-3">
+      <label>Angebots-Nr.</label>
+      <input id="offerNo">
+    </div>
+
+    <div class="col-3">
+      <label>Datum Angebot</label>
+      <input id="date" type="date">
+    </div>
+
+    <div class="col-3">
+      <label>Gültig bis</label>
+      <input id="validUntil" type="date">
+    </div>
+
+    <div class="col-3">
+      <label>Leistungszeitraum</label>
+      <input id="period" placeholder="z. B. 01–03/2026">
+    </div>
+
+    <div class="col-12">
+      <label>Positionen</label>
+      <table id="items">
+        <thead>
+          <tr>
+            <th>Bezeichnung</th>
+            <th>Menge</th>
+            <th>Einheit</th>
+            <th>Einzelpreis (€)</th>
+            <th>Netto (€)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="actions">
+        <button id="add">+ Position</button>
+        <button class="secondary" id="clear">Alles löschen</button>
+      </div>
+    </div>
+
+    <div class="col-3">
+      <label>USt.-Satz</label>
+      <select id="vat">
+        <option value="0" selected>0 % (Kleinunternehmer)</option>
+        <option value="10">10 %</option>
+        <option value="20">20 % (AT)</option>
+      </select>
+    </div>
+
+    <div class="col-3">
+      <label>Rabatt gesamt (%)</label>
+      <input id="discount" type="number" value="0" min="0" max="100" step="0.1">
+    </div>
+
+    <div class="col-6">
+      <label>Fußtext / Hinweise</label>
+      <textarea id="notes">Kleinunternehmer gemäß § 6 Abs. 1 Z 27 UStG – es wird keine Umsatzsteuer verrechnet.
+Dieses Angebot ist freibleibend und bis zum oben angegebenen Datum gültig.</textarea>
+    </div>
+
+    <div class="col-12 actions">
+      <button onclick="render()">Vorschau aktualisieren</button>
+      <button class="secondary" onclick="window.print()">PDF speichern / Drucken</button>
+    </div>
+
+  </div>
+</section>
+
+<section class="preview" id="preview"></section>
+
+</main>
+
+<script>
+function money(x){ return (Math.round(Number(x||0)*100)/100).toFixed(2); }
+
+function slugify(str){
+  return (str || '')
+    .toLowerCase()
+    .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'')
+    .slice(0,40);
+}
+
+// Init
+(function init(){
+  const now = new Date();
+  const iso = now.toISOString().slice(0,10);
+  document.getElementById("date").value = iso;
+
+  const valid = new Date(now);
+  valid.setDate(valid.getDate() + 30);
+  document.getElementById("validUntil").value = valid.toISOString().slice(0,10);
+
+  document.getElementById("offerNo").value =
+    "ANG-" + now.getFullYear()
+    + String(now.getMonth()+1).padStart(2,"0")
+    + String(now.getDate()).padStart(2,"0")
+    + "-" + String(now.getHours()).padStart(2,"0")
+    + String(now.getMinutes()).padStart(2,"0");
+
+  addRow();
+})();
+
+// Positionen
+document.getElementById("add").onclick = addRow;
+document.getElementById("clear").onclick = () => {
+  document.querySelector("#items tbody").innerHTML = "";
+  addRow();
+};
+
+function addRow(){
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td contenteditable="true">Workshop „KI in der Praxis“</td>
+    <td contenteditable="true">1</td>
+    <td contenteditable="true">Tag</td>
+    <td contenteditable="true">1000.00</td>
+    <td class="net">1000.00</td>
+    <td><button type="button" onclick="this.closest('tr').remove(); calc()">✕</button></td>`;
+  tr.oninput = calc;
+  document.querySelector("#items tbody").appendChild(tr);
+  calc();
+}
+
+function calc(){
+  let sum = 0;
+  document.querySelectorAll("#items tbody tr").forEach(tr=>{
+    const qty   = parseFloat(tr.children[1].textContent.replace(",", "."))||0;
+    const price = parseFloat(tr.children[3].textContent.replace(",", "."))||0;
+    const net   = qty * price;
+    tr.querySelector(".net").textContent = money(net);
+    sum += net;
+  });
+  const disc = parseFloat(document.getElementById("discount").value)||0;
+  const after = sum * (1 - disc/100);
+  const vatRate = parseFloat(document.getElementById("vat").value)||0;
+  const tax = after * vatRate/100;
+  const total = after + tax;
+  calc.data = {sum, after, vatRate, tax, total};
+}
+
+function render(){
+  calc();
+  const d = calc.data;
+  const v = id => document.getElementById(id).value;
+
+  const rows = [...document.querySelectorAll("#items tbody tr")].map(tr=>`
+    <tr>
+      <td>${tr.children[0].textContent}</td>
+      <td>${tr.children[1].textContent}</td>
+      <td>${tr.children[2].textContent}</td>
+      <td style="text-align:right">${tr.children[3].textContent}</td>
+      <td style="text-align:right">${tr.children[4].textContent}</td>
+    </tr>`).join("");
+
+  const vatText = d.vatRate === 0
+    ? "Kleinunternehmer gemäß § 6 Abs. 1 Z 27 UStG – keine Umsatzsteuer."
+    : d.vatRate + " % USt.";
+
+  const logo = `<img src="aichmayr-technology-logo.png" alt="Aichmayr Technology Logo"
+                   style="height:70px; margin-bottom:10px;">`;
+
+  const clientSlug = slugify(v("client") || v("clientAddr"));
+  const dateStr    = v("date") || new Date().toISOString().slice(0,10);
+  const folderName = clientSlug ? `kunden/${clientSlug}` : 'kunden/UNBEKANNT';
+  const fileName   = `ANG_${dateStr}_${clientSlug || 'kunde'}.pdf`;
+
+  document.getElementById("preview").innerHTML = `
+    <div style="display:flex; justify-content:space-between; gap:20px;">
+      <div>
+        ${logo}
+        <div style="font-weight:bold; font-size:18px;">${v("issuer")}</div>
+        <div>${v("issuerAddr")}</div>
+        <div>${v("contact")}</div>
+        <div>${v("web")}</div>
+      </div>
+      <div style="text-align:right;">
+        <h2 style="margin:0 0 4px 0;">Angebot</h2>
+        <div><b>Angebots-Nr.:</b> ${v("offerNo")}</div>
+        <div><b>Datum:</b> ${v("date")}</div>
+        <div><b>Gültig bis:</b> ${v("validUntil")}</div>
+        <div><b>Leistungszeitraum:</b> ${v("period")||"-"}</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div style="margin:8px 0 12px;">
+      <b>An:</b><br>
+      ${v("client")}<br>
+      ${v("clientAddr")}
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Bezeichnung</th>
+          <th>Menge</th>
+          <th>Einheit</th>
+          <th>Einzelpreis (€)</th>
+          <th>Netto (€)</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="text-align:right">Zwischensumme</td>
+          <td style="text-align:right">${money(d.sum)}</td>
+        </tr>
+        <tr>
+          <td colspan="4" style="text-align:right">Rabatt</td>
+          <td style="text-align:right">– ${money(d.sum - d.after)}</td>
+        </tr>
+        <tr>
+          <td colspan="4" style="text-align:right">${vatText}</td>
+          <td style="text-align:right">${money(d.tax)}</td>
+        </tr>
+        <tr>
+          <td colspan="4" style="text-align:right; font-weight:bold;">Gesamtbetrag</td>
+          <td style="text-align:right; font-weight:bold;">${money(d.total)}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p style="margin-top:20px; white-space:pre-wrap;">${v("notes")}</p>
+
+    <p style="margin-top:10px; font-size:11px; color:#666;">
+      Dieses Angebot wurde elektronisch erstellt und ist ohne Unterschrift gültig.
+    </p>
+
+    <div style="margin-top:16px; font-size:12px; color:#6b7280;">
+      <b>Speicher-Empfehlung (lokal):</b><br>
+      Ordner: <code>${folderName}</code><br>
+      Dateiname: <code>${fileName}</code>
+    </div>
+  `;
+}
+
+// erste Vorschau
+render();
+</script>
+
+</body>
+</html>
