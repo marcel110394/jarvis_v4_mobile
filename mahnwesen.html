@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Mahnwesen · Aichmayr Technology</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  background:#000;
+  color:#fff;
+  font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  padding:18px;
+}
+h1{margin-top:0;}
+.card{
+  background:#111;
+  border:1px solid #222;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:12px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+td, th{
+  padding:9px 6px;
+  border-bottom:1px solid #222;
+}
+th{
+  color:#aaa;
+  font-size:12px;
+  text-transform:uppercase;
+}
+button{
+  padding:6px 12px;
+  border-radius:8px;
+  border:1px solid #444;
+  background:#fff;
+  color:#000;
+  cursor:pointer;
+  font-weight:600;
+  font-size:12px;
+}
+textarea{
+  width:100%;
+  height:160px;
+  background:#0f0f0f;
+  border:1px solid #444;
+  color:#fff;
+  padding:8px;
+  border-radius:8px;
+}
+.overdue{color:#ff6666;font-weight:bold;}
+.warn{color:#ffd966;font-weight:bold;}
+.green{color:#66ff99;font-weight:bold;}
+
+.filterRow{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+  flex-wrap:wrap;
+}
+select{
+  background:#111;
+  color:#fff;
+  border:1px solid #444;
+  border-radius:8px;
+  padding:6px 10px;
+}
+.dashboard{
+  display:flex;
+  gap:18px;
+  font-size:13px;
+}
+.dashboard b{font-size:15px;}
+</style>
+</head>
+
+<body>
+
+<h1>Mahnwesen</h1>
+
+<div id="dashboard" class="card dashboard"></div>
+
+<div class="filterRow">
+  <select id="filter" onchange="render()">
+    <option value="all">Alle</option>
+    <option value="open">Offen</option>
+    <option value="overdue">Überfällig</option>
+    <option value="paid">Bezahlt</option>
+  </select>
+</div>
+
+<div id="list"></div>
+
+<script>
+// =======================================
+// INVOICE STORAGE
+// =======================================
+function loadInvoices(){
+  return JSON.parse(localStorage.getItem("invoices") || "[]");
+}
+function saveInvoices(list){
+  localStorage.setItem("invoices", JSON.stringify(list));
+}
+
+// =======================================
+// DASHBOARD
+// =======================================
+function renderDashboard(){
+  const list = loadInvoices();
+  let overdue = 0, open = 0, paid = 0;
+
+  const today = new Date().toISOString().slice(0,10);
+
+  list.forEach(inv=>{
+    if(inv.status === "paid") paid += inv.amount;
+    else if(inv.due < today) overdue += inv.amount;
+    else open += inv.amount;
+  });
+
+  document.getElementById("dashboard").innerHTML = `
+    <div>🔴 Überfällig: <b>${overdue.toFixed(2)} €</b></div>
+    <div>🟡 Offen: <b>${open.toFixed(2)} €</b></div>
+    <div>🟢 Bezahlt: <b>${paid.toFixed(2)} €</b></div>
+  `;
+}
+
+// =======================================
+// MAIN LIST
+// =======================================
+function render(){
+  renderDashboard();
+
+  const list = loadInvoices();
+  const wrap = document.getElementById("list");
+
+  if(list.length === 0){
+    wrap.innerHTML = "<div class='card'>Keine Rechnungen gespeichert.</div>";
+    return;
+  }
+
+  const mode = document.getElementById("filter").value;
+  const today = new Date().toISOString().slice(0,10);
+
+  const filtered = list.filter(inv=>{
+    if(mode === "all") return true;
+    if(mode === "open") return inv.status === "open" && inv.due >= today;
+    if(mode === "overdue") return inv.status === "open" && inv.due < today;
+    if(mode === "paid") return inv.status === "paid";
+  });
+
+  if(filtered.length === 0){
+    wrap.innerHTML = "<div class='card'>Keine Einträge in diesem Filter.</div>";
+    return;
+  }
+
+  let html = `
+  <table>
+    <thead>
+      <tr>
+        <th>Rechnung</th>
+        <th>Kunde</th>
+        <th>Betrag</th>
+        <th>Fällig</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+
+  filtered.forEach(inv=>{
+    const overdue = inv.status === "open" && inv.due < today;
+    const diff = Math.floor((new Date(today) - new Date(inv.due)) / (1000*60*60*24));
+
+    html += `
+      <tr>
+        <td>${inv.id}</td>
+        <td>${inv.client}</td>
+        <td>${inv.amount.toFixed(2)} €</td>
+        <td>${inv.due}</td>
+        <td>
+          ${
+            inv.status === "paid" ?
+            "<span class='green'>Bezahlt</span>" :
+            overdue ?
+            "<span class='overdue'>Überfällig ("+diff+" Tage)</span>" :
+            "<span class='warn'>Offen</span>"
+          }
+        </td>
+        <td>
+          ${
+            inv.status === "paid"
+            ? ""
+            : `
+              <button onclick="openReminder('${inv.id}')">Mahnung</button>
+              <button onclick="markPaid('${inv.id}')">Bezahlt</button>
+            `
+          }
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  wrap.innerHTML = html;
+}
+
+// =======================================
+// Rechnung als bezahlt markieren
+// =======================================
+function markPaid(id){
+  let list = loadInvoices();
+  let inv = list.find(x => x.id === id);
+  if(!inv) return;
+
+  inv.status = "paid";
+  inv.paidDate = new Date().toISOString().slice(0,10);
+
+  saveInvoices(list);
+  render();
+}
+
+// =======================================
+// MAHNUNG
+// =======================================
+function openReminder(id){
+  const list = loadInvoices();
+  const inv = list.find(x=>x.id === id);
+  if(!inv) return;
+
+  const today = new Date().toISOString().slice(0,10);
+  const diff = Math.floor((new Date(today) - new Date(inv.due)) / (1000*60*60*24));
+
+  // Verzugszinsen: 8,68% / Jahr
+  const dailyRate = 0.0868 / 365;
+  const interest = inv.amount * dailyRate * diff;
+
+  // Mahngebühren
+  const feeLevels = {1:10, 2:20, 3:30};
+  const fee = feeLevels[inv.reminderLevel+1] || 0;
+
+  const total = inv.amount + interest + fee;
+
+  const text = `
+Aichmayr Technology
+Mahnung (Stufe ${inv.reminderLevel + 1})
+
+Sehr geehrte/r Kunde/in (${inv.client}),
+
+Zu der Rechnung:
+
+  Rechnungsnummer: ${inv.id}
+  Betrag: ${inv.amount.toFixed(2)} €
+  Fällig am: ${inv.due}
+
+besteht derzeit ein offener Betrag.
+
+Die Rechnung ist nun seit ${diff} Tagen überfällig.
+
+Verzugszinsen: ${interest.toFixed(2)} €
+Mahngebühr: ${fee.toFixed(2)} €
+
+GESAMT OFFEN: ${total.toFixed(2)} €
+
+Bitte begleichen Sie den Betrag innerhalb der nächsten 7 Tage.
+
+Mit freundlichen Grüßen 
+Aichmayr Technology
+  `.trim();
+
+  document.getElementById("list").innerHTML = `
+    <div class="card">
+      <h2>Mahnung generieren</h2>
+      <textarea id="mahntext">${text}</textarea><br><br>
+      <button onclick="saveReminder('${id}')">Mahnung markieren</button>
+      <button onclick="window.print()">Drucken</button>
+      <button onclick="render()" style="margin-left:8px;">Zurück</button>
+    </div>
+  `;
+}
+
+// =======================================
+// Mahnstufe erhöhen
+// =======================================
+function saveReminder(id){
+  let list = loadInvoices();
+  let inv = list.find(x=>x.id === id);
+  if(!inv) return;
+
+  inv.reminderLevel += 1;
+  inv.lastReminder = new Date().toISOString().slice(0,10);
+
+  saveInvoices(list);
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>

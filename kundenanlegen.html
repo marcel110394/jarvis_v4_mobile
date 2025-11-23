@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Jarvis · Kundenverwaltung</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body{
+    margin:0;
+    padding:0;
+    background:#000;
+    color:#fff;
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  header{
+    padding:14px 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  main{
+    padding:12px 14px;
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  h2{
+    margin:10px 0 4px;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .info{
+    font-size:11px;
+    color:#aaa;
+    margin-bottom:8px;
+  }
+  form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-gap:8px;
+    margin-bottom:16px;
+  }
+  form input, form textarea{
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.25);
+    background:#080808;
+    color:#fff;
+    font-size:13px;
+  }
+  form textarea{
+    grid-column:1 / span 2;
+    min-height:60px;
+  }
+  label{
+    font-size:11px;
+    color:#ccc;
+    margin-bottom:2px;
+    display:block;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .field-full{
+    grid-column:1 / span 2;
+  }
+  .actions{
+    grid-column:1 / span 2;
+    display:flex;
+    gap:8px;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  button{
+    padding:8px 12px;
+    border-radius:8px;
+    border:none;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:#fff;
+    color:#000;
+  }
+  .btn-danger{
+    background:#b00020;
+    color:#fff;
+  }
+  .btn-secondary{
+    background:#111;
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.35);
+  }
+  .status{
+    font-size:12px;
+    margin-top:6px;
+  }
+  .status-ok{
+    color:#7cf57c;
+  }
+  .status-warn{
+    color:#ffd966;
+  }
+
+  .list-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:4px;
+  }
+  .pill{
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.3);
+  }
+  .list-filter{
+    max-width:220px;
+    padding:6px 8px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.3);
+    background:#080808;
+    color:#fff;
+    font-size:12px;
+  }
+  .list{
+    border-top:1px solid rgba(255,255,255,0.16);
+  }
+  .entry{
+    padding:8px 4px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:13px;
+  }
+  .entry-main{
+    max-width:70%;
+  }
+  .entry-title{
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .entry-meta{
+    font-size:11px;
+    color:#bbb;
+  }
+  .entry-notes{
+    font-size:12px;
+    color:#ddd;
+    margin-top:3px;
+  }
+  .entry-buttons{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    align-items:flex-end;
+  }
+  .entry-buttons button{
+    font-size:11px;
+    padding:4px 8px;
+  }
+  .empty{
+    font-size:12px;
+    color:#777;
+    padding:6px 0;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>Jarvis · Kundenverwaltung</div>
+  <button class="btn-ghost" onclick="window.close()">Schließen</button>
+</header>
+<main>
+  <h2>Kunde anlegen / bearbeiten</h2>
+  <div class="info">
+    Kunde anlegen, automatischen Ordnerpfad generieren und danach direkt zu Angebot oder Rechnung springen.
+  </div>
+  <form id="form">
+    <div class="field field-full">
+      <label>Firmenname / Kunde*</label>
+      <input id="name" required placeholder="z. B. ACME GmbH">
+    </div>
+    <div class="field">
+      <label>Ansprechpartner</label>
+      <input id="contactPerson" placeholder="z. B. Max Mustermann">
+    </div>
+    <div class="field">
+      <label>Kundennummer</label>
+      <input id="customerNo" placeholder="z. B. KND-2025-001">
+    </div>
+    <div class="field field-full">
+      <label>Adresse</label>
+      <input id="address" placeholder="Straße, Hausnummer">
+    </div>
+    <div class="field">
+      <label>PLZ</label>
+      <input id="zip" placeholder="PLZ">
+    </div>
+    <div class="field">
+      <label>Ort</label>
+      <input id="city" placeholder="Ort">
+    </div>
+    <div class="field">
+      <label>Land</label>
+      <input id="country" placeholder="Land">
+    </div>
+    <div class="field">
+      <label>E-Mail</label>
+      <input id="email" type="email" placeholder="name@firma.tld">
+    </div>
+    <div class="field">
+      <label>Telefon</label>
+      <input id="phone" placeholder="+43 ...">
+    </div>
+
+    <div class="field field-full">
+      <label>Ordnerpfad (Vorschlag)</label>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <input id="folder" readonly style="flex:1; opacity:0.9;">
+        <button type="button" class="btn-secondary" onclick="copyFolder()">Kopieren</button>
+      </div>
+    </div>
+
+    <div class="field field-full">
+      <label>Notizen</label>
+      <textarea id="notes" placeholder="z. B. Projektart, Zahlungsziel, besondere Absprachen"></textarea>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn-primary">Kunde speichern</button>
+      <button type="button" class="btn-ghost" onclick="resetForm()">Reset</button>
+      <button type="button" class="btn-danger" onclick="deleteAll()" style="margin-left:auto;">Alle Kunden löschen</button>
+    </div>
+    <div id="status" class="status"></div>
+  </form>
+
+  <h2>Kundenübersicht</h2>
+  <div class="list-header">
+    <div id="summary" class="pill">0 Kunden</div>
+    <input id="filter" class="list-filter" placeholder="Suche (Name, Mail, Ort)" oninput="renderList()">
+  </div>
+  <div id="list" class="list"></div>
+</main>
+
+<script>
+let editIndex = null;
+
+function getClients(){
+  return JSON.parse(localStorage.getItem("db_clients") || "[]");
+}
+function saveClients(list){
+  localStorage.setItem("db_clients", JSON.stringify(list));
+}
+function el(id){ return document.getElementById(id); }
+
+function slugify(str){
+  return (str || "")
+    .toString()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g,"_")
+    .replace(/^_+|_+$/g,"");
+}
+
+function updateFolderSuggestion(){
+  const name = el("name").value.trim();
+  const no   = el("customerNo").value.trim();
+  let base = slugify(name);
+  if(no){
+    base += "_" + slugify(no);
+  }
+  if(!base){
+    el("folder").value = "";
+    return;
+  }
+  el("folder").value = "kunden/" + base;
+}
+
+el("name").addEventListener("input", updateFolderSuggestion);
+el("customerNo").addEventListener("input", updateFolderSuggestion);
+
+function resetForm(){
+  el("form").reset();
+  editIndex = null;
+  el("folder").value = "";
+  el("status").textContent = "";
+}
+
+function deleteAll(){
+  if(!confirm("Wirklich alle Kunden aus der lokalen Datenbank löschen?")) return;
+  localStorage.removeItem("db_clients");
+  renderList();
+  resetForm();
+}
+
+function copyFolder(){
+  const f = el("folder").value;
+  if(!f) return;
+  navigator.clipboard?.writeText(f).catch(()=>{});
+  el("status").textContent = "Ordnerpfad kopiert: " + f;
+  el("status").className = "status status-ok";
+}
+
+function renderList(){
+  const listEl = el("list");
+  const filterVal = (el("filter").value || "").toLowerCase();
+  const data = getClients().sort((a,b)=>{
+    return (a.name || "").localeCompare(b.name || "");
+  });
+
+  el("summary").textContent = data.length + " Kunden";
+
+  if(data.length === 0){
+    listEl.innerHTML = '<div class="empty">Noch keine Kunden erfasst.</div>';
+    return;
+  }
+
+  listEl.innerHTML = "";
+  data.forEach((c, idx)=>{
+    const hay = (
+      (c.name||"") + " " +
+      (c.email||"") + " " +
+      (c.city||"") + " " +
+      (c.customerNo||"")
+    ).toLowerCase();
+    if(filterVal && !hay.includes(filterVal)) return;
+
+    const div = document.createElement("div");
+    div.className = "entry";
+
+    const folder = c.folder || "";
+
+    div.innerHTML = `
+      <div class="entry-main">
+        <div class="entry-title">${c.name || "(ohne Name)"}</div>
+        <div class="entry-meta">
+          KND: ${c.customerNo || "-"} · ID: ${c.id || "-"}<br>
+          ${c.address || ""} ${c.zip||""} ${c.city||""} ${c.country||""}<br>
+          Mail: ${c.email || "-"} · Tel: ${c.phone || "-"}<br>
+          Ordner: ${folder || "-"}
+        </div>
+        ${c.notes ? `<div class="entry-notes">${c.notes}</div>` : ""}
+      </div>
+      <div class="entry-buttons">
+        <button class="btn-secondary" onclick="editClient(${idx})">Bearbeiten</button>
+        <button class="btn-secondary" onclick="openOffer(${idx})">Angebot</button>
+        <button class="btn-secondary" onclick="openInvoice(${idx})">Rechnung</button>
+        <button class="btn-danger" onclick="deleteClient(${idx})">Löschen</button>
+      </div>
+    `;
+    listEl.appendChild(div);
+  });
+
+  if(!listEl.innerHTML){
+    listEl.innerHTML = '<div class="empty">Keine Kunden zum aktuellen Filter.</div>';
+  }
+}
+
+function openOffer(index){
+  const data = getClients();
+  const c = data[index];
+  if(c){
+    // letzten Kunden für Dokumente merken
+    localStorage.setItem("lastClientName", c.name || "");
+    window.open("angebot.html");
+  }
+}
+
+function openInvoice(index){
+  const data = getClients();
+  const c = data[index];
+  if(c){
+    localStorage.setItem("lastClientName", c.name || "");
+    window.open("rechnung.html");
+  }
+}
+
+function editClient(index){
+  const data = getClients();
+  const c = data[index];
+  if(!c) return;
+  editIndex = index;
+
+  el("name").value         = c.name || "";
+  el("contactPerson").value= c.contactPerson || "";
+  el("customerNo").value   = c.customerNo || "";
+  el("address").value      = c.address || "";
+  el("zip").value          = c.zip || "";
+  el("city").value         = c.city || "";
+  el("country").value      = c.country || "";
+  el("email").value        = c.email || "";
+  el("phone").value        = c.phone || "";
+  el("notes").value        = c.notes || "";
+  el("folder").value       = c.folder || "";
+
+  el("status").textContent = "Bearbeitungsmodus: " + (c.name || "");
+  el("status").className   = "status status-warn";
+}
+
+function deleteClient(index){
+  const data = getClients();
+  const c = data[index];
+  if(!c) return;
+  if(!confirm(`Kunde „${c.name || "-"}“ wirklich löschen?`)) return;
+  data.splice(index, 1);
+  saveClients(data);
+  renderList();
+  resetForm();
+}
+
+el("form").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const name = el("name").value.trim();
+  if(!name){
+    el("status").textContent = "Name ist Pflicht.";
+    el("status").className = "status status-warn";
+    return;
+  }
+
+  const contactPerson = el("contactPerson").value.trim();
+  const customerNo    = el("customerNo").value.trim();
+  const address       = el("address").value.trim();
+  const zip           = el("zip").value.trim();
+  const city          = el("city").value.trim();
+  const country       = el("country").value.trim();
+  const email         = el("email").value.trim();
+  const phone         = el("phone").value.trim();
+  const notes         = el("notes").value.trim();
+  const folder        = el("folder").value.trim() || null;
+
+  const data = getClients();
+  const now  = new Date().toISOString();
+
+  const base = {
+    id: (editIndex === null && !data.length)
+        ? "C0001"
+        : (editIndex !== null && data[editIndex].id)
+          ? data[editIndex].id
+          : "C" + String(Math.floor(Math.random()*99999)).padStart(5,"0"),
+    name,
+    contactPerson,
+    customerNo,
+    address,
+    zip,
+    city,
+    country,
+    email,
+    phone,
+    notes,
+    folder,
+    updated: now,
+    created: (editIndex !== null && data[editIndex].created) ? data[editIndex].created : now
+  };
+
+  if(editIndex === null){
+    data.push(base);
+  } else {
+    data[editIndex] = base;
+  }
+
+  saveClients(data);
+  // Letzten Kunden für Jarvis/Angebot merken
+  localStorage.setItem("lastClientName", name);
+
+  el("status").textContent = "Kunde gespeichert: " + name + " – jetzt Angebot oder Rechnung erstellen?";
+  el("status").className = "status status-ok";
+
+  renderList();
+});
+
+renderList();
+</script>
+</body>
+</html>

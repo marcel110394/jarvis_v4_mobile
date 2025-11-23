@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Jarvis · Spesen & Reisekosten</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body{
+    margin:0;
+    padding:0;
+    background:#000;
+    color:#fff;
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  header{
+    padding:14px 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  main{
+    padding:12px 14px;
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  h2{
+    margin:10px 0 4px;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .info{
+    font-size:11px;
+    color:#aaa;
+    margin-bottom:8px;
+  }
+  form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-gap:8px;
+    margin-bottom:16px;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .field-full{
+    grid-column:1 / span 2;
+  }
+  label{
+    font-size:11px;
+    color:#ccc;
+  }
+  input, select, textarea{
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.25);
+    background:#080808;
+    color:#fff;
+    font-size:13px;
+  }
+  textarea{
+    min-height:50px;
+  }
+  .actions{
+    grid-column:1 / span 2;
+    display:flex;
+    gap:8px;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  button{
+    padding:8px 12px;
+    border-radius:8px;
+    border:none;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:#fff;
+    color:#000;
+  }
+  .btn-danger{
+    background:#b00020;
+    color:#fff;
+  }
+  .btn-secondary{
+    background:#111;
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.35);
+  }
+  .status{
+    font-size:12px;
+    margin-top:6px;
+  }
+  .status-ok{
+    color:#7cf57c;
+  }
+  .status-warn{
+    color:#ffd966;
+  }
+
+  .controls-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:4px;
+  }
+  .pill{
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.3);
+  }
+  .filter{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .filter select{
+    padding:4px 8px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.3);
+    background:#080808;
+    color:#fff;
+    font-size:12px;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+    margin-top:6px;
+  }
+  th, td{
+    border-bottom:1px solid rgba(255,255,255,0.15);
+    padding:6px 4px;
+    vertical-align:top;
+  }
+  th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color:#ccc;
+  }
+  tbody tr:nth-child(even){
+    background:#050505;
+  }
+  .right{
+    text-align:right;
+  }
+  .empty{
+    font-size:12px;
+    color:#777;
+    padding:6px 0;
+  }
+  .tag{
+    font-size:10px;
+    padding:1px 5px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.3);
+    margin-right:4px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>Jarvis · Spesen & Reisekosten</div>
+  <button class="btn-ghost" onclick="window.close()">Schließen</button>
+</header>
+<main>
+  <h2>Neue Spesen erfassen</h2>
+  <div class="info">
+    Typ wählen: Reisezeit, Flug, Auto (km), Bus/Bahn, Hotel, Sonstiges. Betrag wird – wo möglich – automatisch berechnet.
+  </div>
+  <form id="form">
+    <div class="field">
+      <label>Datum</label>
+      <input type="date" id="date">
+    </div>
+    <div class="field">
+      <label>Projekt / Kunde</label>
+      <input id="project" placeholder="z. B. ACME Workshop Wien">
+    </div>
+    <div class="field field-full">
+      <label>Kategorie</label>
+      <select id="category">
+        <option value="reisezeit">Reisezeit (Stunden)</option>
+        <option value="flug">Flug</option>
+        <option value="auto">Auto (km)</option>
+        <option value="bahn">Bus/Bahn-Ticket</option>
+        <option value="hotel">Hotel/Übernachtung</option>
+        <option value="verpflegung">Verpflegung</option>
+        <option value="sonstiges">Sonstiges</option>
+      </select>
+    </div>
+
+    <!-- REISEZEIT -->
+    <div class="field">
+      <label>Reisezeit (h)</label>
+      <input type="number" step="0.1" min="0" id="travelHours" placeholder="z. B. 3.5">
+    </div>
+    <div class="field">
+      <label>Satz Reisezeit €/h</label>
+      <input type="number" step="1" min="0" id="travelRate" placeholder="z. B. 40">
+    </div>
+
+    <!-- AUTO -->
+    <div class="field">
+      <label>Auto – km</label>
+      <input type="number" step="1" min="0" id="km" placeholder="z. B. 120">
+    </div>
+    <div class="field">
+      <label>Satz pro km (€)</label>
+      <input type="number" step="0.01" min="0" id="kmRate" placeholder="z. B. 0.42">
+    </div>
+
+    <!-- FLUG / BAHN / HOTEL / VERPFLEGUNG / SONSTIGE KOSTEN -->
+    <div class="field">
+      <label>Betrag (€)</label>
+      <input type="number" step="0.01" min="0" id="amount" placeholder="Falls manuell eingeben">
+    </div>
+    <div class="field">
+      <label>Währung</label>
+      <input id="currency" value="EUR">
+    </div>
+
+    <div class="field field-full">
+      <label>Beschreibung</label>
+      <input id="description" placeholder="z. B. Flug Wien–Berlin, ÖBB-Ticket, Hotel, etc.">
+    </div>
+
+    <div class="field field-full">
+      <label>Notizen</label>
+      <textarea id="notes" placeholder="Details zur Reise, Buchungsnummern, Referenzen"></textarea>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-secondary" onclick="calcAmount()">Betrag berechnen</button>
+      <button type="submit" class="btn-primary">Spesen speichern</button>
+      <button type="button" class="btn-ghost" onclick="resetForm()">Reset</button>
+      <button type="button" class="btn-danger" onclick="deleteAll()" style="margin-left:auto;">Alle Spesen löschen</button>
+    </div>
+    <div id="status" class="status"></div>
+  </form>
+
+  <h2>Übersicht & Auswertung</h2>
+  <div class="controls-row">
+    <div id="summary" class="pill">0 Einträge · 0,00 €</div>
+    <div class="filter">
+      <select id="filterMonth" onchange="renderList()">
+        <option value="">Monat (alle)</option>
+      </select>
+      <select id="filterCategory" onchange="renderList()">
+        <option value="">Kategorie (alle)</option>
+        <option value="reisezeit">Reisezeit</option>
+        <option value="flug">Flug</option>
+        <option value="auto">Auto</option>
+        <option value="bahn">Bus/Bahn</option>
+        <option value="hotel">Hotel</option>
+        <option value="verpflegung">Verpflegung</option>
+        <option value="sonstiges">Sonstiges</option>
+      </select>
+      <button class="btn-secondary" onclick="exportCSV()">CSV Export</button>
+    </div>
+  </div>
+
+  <div id="tableWrapper"></div>
+</main>
+
+<script>
+function el(id){ return document.getElementById(id); }
+function money(x){
+  return (Math.round(Number(x||0)*100)/100).toFixed(2);
+}
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+/* Storage-Handling */
+function getExpenses(){
+  return JSON.parse(localStorage.getItem("expenses") || "[]");
+}
+function saveExpenses(list){
+  localStorage.setItem("expenses", JSON.stringify(list));
+}
+
+/* Initial Defaults */
+(function init(){
+  if(!el("date").value) el("date").value = todayStr();
+  renderMonthFilter();
+  renderList();
+})();
+
+/* Betrag berechnen basierend auf Kategorie */
+function calcAmount(){
+  const cat  = el("category").value;
+  const h    = parseFloat(el("travelHours").value || 0);
+  const hr   = parseFloat(el("travelRate").value || 0);
+  const km   = parseFloat(el("km").value || 0);
+  const kmR  = parseFloat(el("kmRate").value || 0);
+
+  let amt = parseFloat(el("amount").value || 0);
+
+  if(cat === "reisezeit" && h>0 && hr>0){
+    amt = h * hr;
+  }
+  if(cat === "auto" && km>0 && kmR>0){
+    amt = km * kmR;
+  }
+
+  if(!isFinite(amt) || amt <= 0){
+    el("status").textContent = "Kein gültiger Betrag berechnet. Prüfe Eingaben.";
+    el("status").className = "status status-warn";
+    return;
+  }
+
+  el("amount").value = money(amt);
+  el("status").textContent = "Betrag berechnet: " + money(amt) + " €";
+  el("status").className = "status status-ok";
+}
+
+/* Formular zurücksetzen */
+function resetForm(){
+  el("form").reset();
+  el("date").value = todayStr();
+  el("status").textContent = "";
+}
+
+/* Alle löschen */
+function deleteAll(){
+  if(!confirm("Wirklich alle Spesen-Einträge löschen?")) return;
+  localStorage.removeItem("expenses");
+  renderList();
+  renderMonthFilter();
+  resetForm();
+}
+
+/* Monat-Filter aufbauen */
+function renderMonthFilter(){
+  const data = getExpenses();
+  const sel = el("filterMonth");
+  const current = sel.value;
+  const months = new Set();
+  data.forEach(e=>{
+    if(e.date && e.date.length >= 7){
+      months.add(e.date.slice(0,7)); // YYYY-MM
+    }
+  });
+
+  const arr = Array.from(months).sort();
+  sel.innerHTML = '<option value="">Monat (alle)</option>';
+  arr.forEach(m=>{
+    const opt = document.createElement("option");
+    opt.value = m;
+    const [y,mo] = m.split("-");
+    opt.textContent = `${mo}.${y}`;
+    sel.appendChild(opt);
+  });
+  if(current) sel.value = current;
+}
+
+/* Tabelle rendern */
+function renderList(){
+  const data = getExpenses().sort((a,b)=>{
+    const da = a.date || "";
+    const db = b.date || "";
+    if(da === db) return (a.created||"").localeCompare(b.created||"");
+    return da.localeCompare(db);
+  });
+
+  const monthFilter = el("filterMonth").value;
+  const catFilter   = el("filterCategory").value;
+
+  let filtered = data.filter(e=>{
+    let ok = true;
+    if(monthFilter && e.date && e.date.slice(0,7) !== monthFilter) ok = false;
+    if(catFilter && e.category !== catFilter) ok = false;
+    return ok;
+  });
+
+  let total = filtered.reduce((s,e)=> s + Number(e.amount||0), 0);
+  el("summary").textContent = `${filtered.length} Einträge · ${money(total)} €`;
+
+  const wrap = el("tableWrapper");
+  if(filtered.length === 0){
+    wrap.innerHTML = '<div class="empty">Keine Spesen erfasst (oder Filter ohne Treffer).</div>';
+    return;
+  }
+
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Projekt / Kunde</th>
+          <th>Kategorie</th>
+          <th>Details</th>
+          <th class="right">Betrag (€)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  filtered.forEach((e, idx)=>{
+    const tags = [];
+    if(e.category === "reisezeit"){
+      if(e.travelHours) tags.push(`${e.travelHours} h`);
+      if(e.travelRate)  tags.push(`${money(e.travelRate)} €/h`);
+    }
+    if(e.category === "auto"){
+      if(e.km)     tags.push(`${e.km} km`);
+      if(e.kmRate) tags.push(`${money(e.kmRate)} €/km`);
+    }
+
+    let tagHtml = "";
+    if(tags.length){
+      tagHtml = tags.map(t=>`<span class="tag">${t}</span>`).join(" ");
+    }
+
+    const catLabelMap = {
+      reisezeit: "Reisezeit",
+      flug: "Flug",
+      auto: "Auto",
+      bahn: "Bus/Bahn",
+      hotel: "Hotel",
+      verpflegung: "Verpflegung",
+      sonstiges: "Sonstiges"
+    };
+
+    const catLabel = catLabelMap[e.category] || e.category;
+
+    html += `
+      <tr data-id="${e.id}">
+        <td>${e.date || ""}</td>
+        <td>${e.project || ""}</td>
+        <td>${catLabel}</td>
+        <td>
+          ${e.description || ""}
+          ${e.notes ? `<br><span style="color:#aaa;">${e.notes}</span>` : ""}
+          ${tagHtml ? `<br>${tagHtml}` : ""}
+        </td>
+        <td class="right">${money(e.amount)} ${e.currency || "EUR"}</td>
+        <td class="right">
+          <button class="btn-ghost" style="font-size:11px; padding:3px 6px;" onclick="deleteSingle('${e.id}')">X</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  wrap.innerHTML = html;
+}
+
+/* Einzel-Eintrag löschen */
+function deleteSingle(id){
+  const data = getExpenses();
+  const idx = data.findIndex(e=>e.id === id);
+  if(idx === -1) return;
+  if(!confirm("Diesen Spesen-Eintrag löschen?")) return;
+  data.splice(idx,1);
+  saveExpenses(data);
+  renderList();
+  renderMonthFilter();
+}
+
+/* Formular submit */
+el("form").addEventListener("submit", (e)=>{
+  e.preventDefault();
+
+  const date = el("date").value || todayStr();
+  const project = el("project").value.trim();
+  const category = el("category").value;
+  const travelHours = parseFloat(el("travelHours").value || 0);
+  const travelRate  = parseFloat(el("travelRate").value || 0);
+  const km          = parseFloat(el("km").value || 0);
+  const kmRate      = parseFloat(el("kmRate").value || 0);
+  let amount        = parseFloat(el("amount").value || 0);
+  const currency    = (el("currency").value || "EUR").toUpperCase();
+  const description = el("description").value.trim();
+  const notes       = el("notes").value.trim();
+
+  // Falls Betrag noch 0 ist, versuchen wir automatisch
+  if(!amount || amount <= 0){
+    if(category === "reisezeit" && travelHours>0 && travelRate>0){
+      amount = travelHours * travelRate;
+    }
+    if(category === "auto" && km>0 && kmRate>0){
+      amount = km * kmRate;
+    }
+  }
+
+  if(!amount || amount <= 0){
+    el("status").textContent = "Kein gültiger Betrag – bitte Betrag, Reisezeit oder km prüfen.";
+    el("status").className = "status status-warn";
+    return;
+  }
+
+  const list = getExpenses();
+  const now  = new Date().toISOString();
+  const entry = {
+    id: "E" + now + Math.random().toString(16).slice(2,8),
+    date,
+    project,
+    category,
+    travelHours: isFinite(travelHours)?travelHours:0,
+    travelRate:  isFinite(travelRate)?travelRate:0,
+    km:          isFinite(km)?km:0,
+    kmRate:      isFinite(kmRate)?kmRate:0,
+    amount,
+    currency,
+    description,
+    notes,
+    created: now
+  };
+
+  list.push(entry);
+  saveExpenses(list);
+  el("status").textContent = "Spesen gespeichert: " + money(amount) + " " + currency;
+  el("status").className = "status status-ok";
+
+  renderList();
+  renderMonthFilter();
+});
+
+/* CSV Export – optimiert für Excel (UTF-8 BOM + ; als Trenner) */
+function exportCSV(){
+  const data = getExpenses();
+  if(data.length === 0){
+    alert("Keine Spesen zum Export.");
+    return;
+  }
+
+  const sep = ";";
+
+  const header = [
+    "id","date","project","category",
+    "travelHours","travelRate",
+    "km","kmRate",
+    "amount","currency",
+    "description","notes","created"
+  ];
+
+  const escapeCell = (v) => {
+    if (v === null || v === undefined) v = "";
+    v = String(v).replace(/"/g, '""'); // Anführungszeichen escapen
+    return `"${v}"`;
+  };
+
+  const lines = [];
+  lines.push(header.join(sep));
+
+  data.forEach(e => {
+    const row = [
+      e.id,
+      e.date,
+      e.project,
+      e.category,
+      e.travelHours || "",
+      e.travelRate  || "",
+      e.km || "",
+      e.kmRate || "",
+      e.amount || "",
+      e.currency || "",
+      (e.description || ""),
+      (e.notes || ""),
+      e.created || ""
+    ].map(escapeCell);
+
+    lines.push(row.join(sep));
+  });
+
+  // UTF-8 BOM für Excel
+  const csvContent = "\uFEFF" + lines.join("\r\n");
+
+  const blob = new Blob([csvContent], {type:"text/csv;charset=utf-8;"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "jarvis_spesen_excel.csv";
+  a.click();
+}
+</script>
+</body>
+</html>
+
