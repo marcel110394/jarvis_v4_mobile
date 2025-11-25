@@ -193,9 +193,13 @@
 </style>
 </head>
 <body>
-<header>
-  <div>Jarvis · Kundenverwaltung</div>
-  <button class="btn-ghost" onclick="window.close()">Schließen</button>
+<header style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#111;color:#fff;">
+  <h1 style="margin:0;font-size:18px;">Aichmayr Technology · Rechnungsgenerator</h1>
+  <div style="display:flex;gap:8px;">
+    <button onclick="location.href='dashboard.html'" style="padding:6px 10px;border-radius:8px;border:1px solid #444;background:#000;color:#fff;cursor:pointer;font-size:12px;">
+      Dashboard
+    </button>
+  </div>
 </header>
 <main>
   <h2>Kunde anlegen / bearbeiten</h2>
@@ -272,6 +276,7 @@
 <script>
 let editIndex = null;
 
+// ---- Storage-Helfer ----
 function getClients(){
   return JSON.parse(localStorage.getItem("db_clients") || "[]");
 }
@@ -280,6 +285,7 @@ function saveClients(list){
 }
 function el(id){ return document.getElementById(id); }
 
+// Slug nur für Ordnername
 function slugify(str){
   return (str || "")
     .toString()
@@ -311,6 +317,7 @@ function resetForm(){
   editIndex = null;
   el("folder").value = "";
   el("status").textContent = "";
+  el("status").className = "status";
 }
 
 function deleteAll(){
@@ -328,8 +335,9 @@ function copyFolder(){
   el("status").className = "status status-ok";
 }
 
+// ---- Liste rendern ----
 function renderList(){
-  const listEl = el("list");
+  const listEl    = el("list");
   const filterVal = (el("filter").value || "").toLowerCase();
   const data = getClients().sort((a,b)=>{
     return (a.name || "").localeCompare(b.name || "");
@@ -343,25 +351,26 @@ function renderList(){
   }
 
   listEl.innerHTML = "";
-  data.forEach((c, idx)=>{
+  data.forEach((c)=>{
     const hay = (
       (c.name||"") + " " +
       (c.email||"") + " " +
-      (c.city||"") + " " +
+      (c.city||"")  + " " +
       (c.customerNo||"")
     ).toLowerCase();
     if(filterVal && !hay.includes(filterVal)) return;
 
+    const folder = c.folder || "";
+    const id = c.id || "";
+
     const div = document.createElement("div");
     div.className = "entry";
-
-    const folder = c.folder || "";
 
     div.innerHTML = `
       <div class="entry-main">
         <div class="entry-title">${c.name || "(ohne Name)"}</div>
         <div class="entry-meta">
-          KND: ${c.customerNo || "-"} · ID: ${c.id || "-"}<br>
+          KND: ${c.customerNo || "-"} · ID: ${id || "-"}<br>
           ${c.address || ""} ${c.zip||""} ${c.city||""} ${c.country||""}<br>
           Mail: ${c.email || "-"} · Tel: ${c.phone || "-"}<br>
           Ordner: ${folder || "-"}
@@ -369,10 +378,10 @@ function renderList(){
         ${c.notes ? `<div class="entry-notes">${c.notes}</div>` : ""}
       </div>
       <div class="entry-buttons">
-        <button class="btn-secondary" onclick="editClient(${idx})">Bearbeiten</button>
-        <button class="btn-secondary" onclick="openOffer(${idx})">Angebot</button>
-        <button class="btn-secondary" onclick="openInvoice(${idx})">Rechnung</button>
-        <button class="btn-danger" onclick="deleteClient(${idx})">Löschen</button>
+        <button class="btn-secondary" onclick="editClient('${id}')">Bearbeiten</button>
+        <button class="btn-secondary" onclick="openOffer('${id}')">Angebot</button>
+        <button class="btn-secondary" onclick="openInvoice('${id}')">Rechnung</button>
+        <button class="btn-danger" onclick="deleteClient('${id}')">Löschen</button>
       </div>
     `;
     listEl.appendChild(div);
@@ -383,50 +392,64 @@ function renderList(){
   }
 }
 
-function openOffer(index){
+// ---- Hilfsfunktion: Client per ID holen ----
+function getClientById(id){
   const data = getClients();
-  const c = data[index];
+  const index = data.findIndex(c => c.id === id);
+  if (index === -1) return { client: null, index: -1, data };
+  return { client: data[index], index, data };
+}
+
+// ---- Buttons in der Liste ----
+function openOffer(id){
+  const { client: c } = getClientById(id);
   if(c){
-    // letzten Kunden für Dokumente merken
-    localStorage.setItem("lastClientName", c.name || "");
+    localStorage.setItem("lastClientName",    c.name       || "");
+    localStorage.setItem("lastCustomerNo",    c.customerNo || "");
+    localStorage.setItem("lastClientAddress", c.address    || "");
+    localStorage.setItem("lastClientZip",     c.zip        || "");
+    localStorage.setItem("lastClientCity",    c.city       || "");
+    localStorage.setItem("lastClientCountry", c.country    || "");
     window.open("angebot.html");
   }
 }
 
-function openInvoice(index){
-  const data = getClients();
-  const c = data[index];
+function openInvoice(id){
+  const { client: c } = getClientById(id);
   if(c){
-    localStorage.setItem("lastClientName", c.name || "");
+    localStorage.setItem("lastClientName",    c.name       || "");
+    localStorage.setItem("lastCustomerNo",    c.customerNo || "");
+    localStorage.setItem("lastClientAddress", c.address    || "");
+    localStorage.setItem("lastClientZip",     c.zip        || "");
+    localStorage.setItem("lastClientCity",    c.city       || "");
+    localStorage.setItem("lastClientCountry", c.country    || "");
     window.open("rechnung.html");
   }
 }
 
-function editClient(index){
-  const data = getClients();
-  const c = data[index];
+function editClient(id){
+  const { client: c, index } = getClientById(id);
   if(!c) return;
   editIndex = index;
 
-  el("name").value         = c.name || "";
-  el("contactPerson").value= c.contactPerson || "";
-  el("customerNo").value   = c.customerNo || "";
-  el("address").value      = c.address || "";
-  el("zip").value          = c.zip || "";
-  el("city").value         = c.city || "";
-  el("country").value      = c.country || "";
-  el("email").value        = c.email || "";
-  el("phone").value        = c.phone || "";
-  el("notes").value        = c.notes || "";
-  el("folder").value       = c.folder || "";
+  el("name").value          = c.name || "";
+  el("contactPerson").value = c.contactPerson || "";
+  el("customerNo").value    = c.customerNo || "";
+  el("address").value       = c.address || "";
+  el("zip").value           = c.zip || "";
+  el("city").value          = c.city || "";
+  el("country").value       = c.country || "";
+  el("email").value         = c.email || "";
+  el("phone").value         = c.phone || "";
+  el("notes").value         = c.notes || "";
+  el("folder").value        = c.folder || "";
 
-  el("status").textContent = "Bearbeitungsmodus: " + (c.name || "");
-  el("status").className   = "status status-warn";
+  el("status").textContent  = "Bearbeitungsmodus: " + (c.name || "");
+  el("status").className    = "status status-warn";
 }
 
-function deleteClient(index){
-  const data = getClients();
-  const c = data[index];
+function deleteClient(id){
+  const { client: c, index, data } = getClientById(id);
   if(!c) return;
   if(!confirm(`Kunde „${c.name || "-"}“ wirklich löschen?`)) return;
   data.splice(index, 1);
@@ -435,6 +458,7 @@ function deleteClient(index){
   resetForm();
 }
 
+// ---- Formular speichern ----
 el("form").addEventListener("submit", (e)=>{
   e.preventDefault();
   const name = el("name").value.trim();
@@ -486,12 +510,19 @@ el("form").addEventListener("submit", (e)=>{
   }
 
   saveClients(data);
-  // Letzten Kunden für Jarvis/Angebot merken
-  localStorage.setItem("lastClientName", name);
+
+  // Letzten Kunden für Dokumente merken
+  localStorage.setItem("lastClientName",    name);
+  localStorage.setItem("lastCustomerNo",    customerNo);
+  localStorage.setItem("lastClientAddress", address);
+  localStorage.setItem("lastClientZip",     zip);
+  localStorage.setItem("lastClientCity",    city);
+  localStorage.setItem("lastClientCountry", country);
 
   el("status").textContent = "Kunde gespeichert: " + name + " – jetzt Angebot oder Rechnung erstellen?";
-  el("status").className = "status status-ok";
+  el("status").className   = "status status-ok";
 
+  editIndex = null;
   renderList();
 });
 
@@ -499,3 +530,5 @@ renderList();
 </script>
 </body>
 </html>
+
+

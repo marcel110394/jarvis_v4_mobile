@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+/* 🎨 STILE */
 body{
   background:#000;
   color:#fff;
@@ -27,6 +28,7 @@ table{
 td, th{
   padding:9px 6px;
   border-bottom:1px solid #222;
+  white-space: nowrap;
 }
 th{
   color:#aaa;
@@ -42,19 +44,21 @@ button{
   cursor:pointer;
   font-weight:600;
   font-size:12px;
+  white-space: nowrap;
 }
-textarea{
-  width:100%;
-  height:160px;
-  background:#0f0f0f;
-  border:1px solid #444;
+select, input[type="text"], input[type="number"], input[type="date"]{
+  background:#111;
   color:#fff;
-  padding:8px;
+  border:1px solid #444;
   border-radius:8px;
+  padding:6px 10px;
+  box-sizing: border-box;
 }
-.overdue{color:#ff6666;font-weight:bold;}
-.warn{color:#ffd966;font-weight:bold;}
-.green{color:#66ff99;font-weight:bold;}
+
+/* AMPELFARBEN */
+.overdue{color:#ff6666;font-weight:bold;} /* Rot */
+.warn{color:#ffd966;font-weight:bold;} /* Gelb */
+.green{color:#66ff99;font-weight:bold;} /* Grün */
 
 .filterRow{
   display:flex;
@@ -62,19 +66,91 @@ textarea{
   margin-bottom:12px;
   flex-wrap:wrap;
 }
-select{
-  background:#111;
-  color:#fff;
-  border:1px solid #444;
-  border-radius:8px;
-  padding:6px 10px;
-}
 .dashboard{
   display:flex;
   gap:18px;
   font-size:13px;
 }
 .dashboard b{font-size:15px;}
+
+/* Neue Rechnung hinzufügen Formular */
+#addForm input[type="text"],
+#addForm input[type="number"],
+#addForm input[type="date"] {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+/* Layout für schöne Mahn-PDF */
+.reminderDoc{
+  background:#ffffff;
+  color:#000000;
+  padding:24px;
+  border-radius:10px;
+  max-width:800px;
+  margin:0 auto;
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+.reminderHeader{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:16px;
+  font-size:13px;
+}
+.reminderTitle{
+  font-size:20px;
+  font-weight:700;
+}
+.reminderMeta{
+  text-align:right;
+  font-size:12px;
+  color:#444;
+}
+.reminderTable{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+  font-size:13px;
+}
+.reminderTable th,
+.reminderTable td{
+  border:1px solid #ddd;
+  padding:6px;
+}
+.reminderTable th{
+  background:#f3f4f6;
+}
+.reminderText{
+  white-space:pre-wrap;
+  margin-top:18px;
+  font-size:13px;
+}
+
+/* Druckansicht: nur den Mahnbrief schön ausgeben */
+@media print {
+  body{
+    background:#fff;
+    color:#000;
+    padding:0;
+  }
+  /* Alles ausblenden, außer der Mahndokumentation */
+  #dashboard,
+  .filterRow,
+  #list > .card > .buttonsBar,
+  #addInvoiceButton,
+  #emailTextToCopy, /* Wichtig: Textfeld für E-Mail beim Drucken ausblenden */
+  #copyButton,
+  h1{
+    display:none !important;
+  }
+  .reminderDoc{
+    box-shadow:none;
+    border-radius:0;
+    max-width:100%;
+    margin:0;
+  }
+}
 </style>
 </head>
 
@@ -91,13 +167,30 @@ select{
     <option value="overdue">Überfällig</option>
     <option value="paid">Bezahlt</option>
   </select>
+  <button id="addInvoiceButton" onclick="openAddForm()">+ Rechnung hinzufügen</button>
+</div>
+
+<div id="addInvoiceContainer" class="card" style="display:none;">
+    <h3>Neue Rechnung hinzufügen</h3>
+    <form id="addForm" onsubmit="addInvoice(event)">
+        <input type="text" id="newId" placeholder="Rechnungsnummer (z.B. 2025-101)" required>
+        <input type="text" id="newClient" placeholder="Kundenname" required>
+        <input type="text" id="newCustomerNo" placeholder="Kunden-Nr. (optional)">
+        <input type="number" id="newAmount" step="0.01" placeholder="Betrag (z.B. 123.45)" required>
+        <label for="newDue">Fälligkeitsdatum:</label>
+        <input type="date" id="newDue" required>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button type="submit">Speichern</button>
+          <button type="button" onclick="closeAddForm()" style="background:#444; color:#fff;">Abbrechen</button>
+        </div>
+    </form>
 </div>
 
 <div id="list"></div>
 
 <script>
 // =======================================
-// INVOICE STORAGE
+// 💾 INVOICE STORAGE
 // =======================================
 function loadInvoices(){
   return JSON.parse(localStorage.getItem("invoices") || "[]");
@@ -105,37 +198,71 @@ function loadInvoices(){
 function saveInvoices(list){
   localStorage.setItem("invoices", JSON.stringify(list));
 }
+function getTodayISO(){
+  return new Date().toISOString().slice(0,10);
+}
 
 // =======================================
-// DASHBOARD
+// 📊 DASHBOARD
 // =======================================
 function renderDashboard(){
   const list = loadInvoices();
   let overdue = 0, open = 0, paid = 0;
-
-  const today = new Date().toISOString().slice(0,10);
+  const today = getTodayISO();
 
   list.forEach(inv=>{
     if(inv.status === "paid") paid += inv.amount;
-    else if(inv.due < today) overdue += inv.amount;
-    else open += inv.amount;
+    else if(inv.status === "open" && inv.due < today) overdue += inv.amount;
+    else if(inv.status === "open" && inv.due >= today) open += inv.amount;
   });
 
   document.getElementById("dashboard").innerHTML = `
     <div>🔴 Überfällig: <b>${overdue.toFixed(2)} €</b></div>
-    <div>🟡 Offen: <b>${open.toFixed(2)} €</b></div>
+    <div>🟡 Offen (noch nicht fällig): <b>${open.toFixed(2)} €</b></div>
     <div>🟢 Bezahlt: <b>${paid.toFixed(2)} €</b></div>
   `;
 }
 
 // =======================================
-// MAIN LIST
+// 🚦 HELPER: Mahnstatus-Anzeige mit Ampelfarben
+// =======================================
+function renderReminderStatus(inv){
+  if(inv.status === "paid"){
+    return "<span class='green'>Bezahlt</span>";
+  }
+
+  const today = getTodayISO();
+  const isOverdue = inv.due < today;
+  const daysDiffRaw = (new Date(today) - new Date(inv.due)) / (1000*60*60*24);
+  const diff = Math.max(0, Math.floor(daysDiffRaw));
+  const level = inv.reminderLevel || 0;
+
+  if (level === 0) {
+    if (isOverdue) {
+      return `<span class='overdue'>Überfällig (${diff} Tage)</span>`;
+    } else {
+      return `<span class='warn'>Offen</span>`;
+    }
+  } else if (level === 1) {
+    return `<span class='warn'>1. Mahnung (Überfällig: ${diff} T.)</span>`;
+  } else if (level >= 2) {
+    return `<span class='overdue'>${level}. Mahnung (Überfällig: ${diff} T.)</span>`;
+  }
+
+  return "Status Unbekannt";
+}
+
+// =======================================
+// 📄 MAIN LIST RENDER
 // =======================================
 function render(){
   renderDashboard();
 
   const list = loadInvoices();
   const wrap = document.getElementById("list");
+  const today = getTodayISO();
+
+  closeAddForm();
 
   if(list.length === 0){
     wrap.innerHTML = "<div class='card'>Keine Rechnungen gespeichert.</div>";
@@ -143,7 +270,6 @@ function render(){
   }
 
   const mode = document.getElementById("filter").value;
-  const today = new Date().toISOString().slice(0,10);
 
   const filtered = list.filter(inv=>{
     if(mode === "all") return true;
@@ -158,40 +284,37 @@ function render(){
   }
 
   let html = `
-  <table>
-    <thead>
-      <tr>
-        <th>Rechnung</th>
-        <th>Kunde</th>
-        <th>Betrag</th>
-        <th>Fällig</th>
-        <th>Status</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Rechnung</th>
+          <th>Kunde</th>
+          <th>Kunden-Nr.</th>
+          <th>Betrag</th>
+          <th>Fällig</th>
+          <th>Status</th>
+          <th>Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
   `;
 
   filtered.forEach(inv=>{
-    const overdue = inv.status === "open" && inv.due < today;
-    const diff = Math.floor((new Date(today) - new Date(inv.due)) / (1000*60*60*24));
+    const daysDiffRaw = (new Date(today) - new Date(inv.due)) / (1000*60*60*24);
+    const diff = Math.max(0, Math.floor(daysDiffRaw));
 
     html += `
       <tr>
         <td>${inv.id}</td>
         <td>${inv.client}</td>
+        <td>${inv.customerNo || "-"}</td>
         <td>${inv.amount.toFixed(2)} €</td>
         <td>${inv.due}</td>
         <td>
-          ${
-            inv.status === "paid" ?
-            "<span class='green'>Bezahlt</span>" :
-            overdue ?
-            "<span class='overdue'>Überfällig ("+diff+" Tage)</span>" :
-            "<span class='warn'>Offen</span>"
-          }
+          ${renderReminderStatus(inv)}
         </td>
-        <td>
+        <td style="white-space:nowrap;">
           ${
             inv.status === "paid"
             ? ""
@@ -200,104 +323,240 @@ function render(){
               <button onclick="markPaid('${inv.id}')">Bezahlt</button>
             `
           }
+          <button onclick="deleteInvoice('${inv.id}')" style="background:#ff6666;color:#fff;border:1px solid #ff0000;">Löschen</button>
         </td>
       </tr>
     `;
   });
 
-  html += "</tbody></table>";
+  html += "</tbody></table></div>";
   wrap.innerHTML = html;
 }
 
 // =======================================
-// Rechnung als bezahlt markieren
+// ✅ AKTIONEN
 // =======================================
+
+// Rechnung als bezahlt markieren
 function markPaid(id){
   let list = loadInvoices();
   let inv = list.find(x => x.id === id);
   if(!inv) return;
 
   inv.status = "paid";
-  inv.paidDate = new Date().toISOString().slice(0,10);
+  inv.paidDate = getTodayISO();
+  inv.reminderLevel = 0;
 
   saveInvoices(list);
   render();
 }
 
+// Rechnung löschen
+function deleteInvoice(id){
+  if(confirm("Soll die Rechnung Nr. " + id + " wirklich gelöscht werden?")){
+    let list = loadInvoices();
+    const updatedList = list.filter(inv => inv.id !== id);
+
+    saveInvoices(updatedList);
+    render();
+  }
+}
+
 // =======================================
-// MAHNUNG
+// ➕ NEUE RECHNUNG HINZUFÜGEN
+// =======================================
+function openAddForm() {
+    document.getElementById("addInvoiceContainer").style.display = 'block';
+    document.getElementById("addInvoiceButton").style.display = 'none';
+    document.getElementById("list").style.display = 'none';
+}
+
+function closeAddForm() {
+    document.getElementById("addInvoiceContainer").style.display = 'none';
+    document.getElementById("addInvoiceButton").style.display = 'inline-block';
+    document.getElementById("list").style.display = 'block';
+}
+
+function addInvoice(event){
+    event.preventDefault();
+
+    const list = loadInvoices();
+    const id = document.getElementById("newId").value.trim();
+    const client = document.getElementById("newClient").value.trim();
+    const customerNo = document.getElementById("newCustomerNo").value.trim();
+    const amount = parseFloat(document.getElementById("newAmount").value);
+    const due = document.getElementById("newDue").value;
+
+    if (list.some(inv => inv.id === id)) {
+        alert("Fehler: Eine Rechnung mit dieser Nummer existiert bereits!");
+        return;
+    }
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("Fehler: Bitte geben Sie einen gültigen Betrag ein.");
+        return;
+    }
+
+    const newInvoice = {
+        id: id,
+        client: client,
+        customerNo: customerNo || null,
+        amount: amount,
+        due: due,
+        status: "open",
+        reminderLevel: 0
+    };
+
+    list.push(newInvoice);
+    saveInvoices(list);
+
+    document.getElementById("addForm").reset();
+    render();
+}
+
+// =======================================
+// 📋 AKTION: E-Mail-Text kopieren
+// =======================================
+function copyEmailText(){
+    const textarea = document.getElementById("emailTextToCopy");
+    // Textarea auswählen (macht den Text markierbar)
+    textarea.select();
+    // Den Text in die Zwischenablage kopieren
+    document.execCommand('copy');
+    alert("Text wurde in die Zwischenablage kopiert. Sie können ihn jetzt in Ihre E-Mail einfügen.");
+}
+
+// =======================================
+// ✉️ MAHNUNG – SCHÖNER BRIEF / PDF + E-MAIL-TEXT
 // =======================================
 function openReminder(id){
   const list = loadInvoices();
-  const inv = list.find(x=>x.id === id);
-  if(!inv) return;
+  const inv  = list.find(x => x.id === id);
+  if (!inv || inv.status === 'paid') return;
 
-  const today = new Date().toISOString().slice(0,10);
-  const diff = Math.floor((new Date(today) - new Date(inv.due)) / (1000*60*60*24));
+  const todayISO = getTodayISO();
+  const dueDate  = inv.due || todayISO;
 
-  // Verzugszinsen: 8,68% / Jahr
-  const dailyRate = 0.0868 / 365;
-  const interest = inv.amount * dailyRate * diff;
+  const daysDiffRaw = (new Date(todayISO) - new Date(dueDate)) / (1000*60*60*24);
+  const daysDiff    = Math.max(0, Math.floor(daysDiffRaw));
 
-  // Mahngebühren
-  const feeLevels = {1:10, 2:20, 3:30};
-  const fee = feeLevels[inv.reminderLevel+1] || 0;
+  if (daysDiff === 0) {
+      alert("Diese Rechnung ist noch nicht überfällig und kann daher nicht gemahnt werden.");
+      render();
+      return;
+  }
 
-  const total = inv.amount + interest + fee;
+  // Verzugszinsen und Gebühren berechnen
+  const yearlyRate = 0.0868; // Z.B. 8,68% p.a.
+  const dailyRate  = yearlyRate / 365;
+  const interest   = inv.amount * dailyRate * daysDiff;
 
-  const text = `
-Aichmayr Technology
-Mahnung (Stufe ${inv.reminderLevel + 1})
+  const currentLevel = inv.reminderLevel || 0;
+  const nextLevel    = currentLevel + 1;
+  const feeLevels    = {1:10, 2:20, 3:30, 4:50};
+  const fee          = feeLevels[nextLevel] || 0;
 
-Sehr geehrte/r Kunde/in (${inv.client}),
+  const total        = inv.amount + interest + fee;
 
-Zu der Rechnung:
+  const custLine = inv.customerNo ? `  Kundennummer: ${inv.customerNo}` : "";
 
-  Rechnungsnummer: ${inv.id}
-  Betrag: ${inv.amount.toFixed(2)} €
-  Fällig am: ${inv.due}
+  // 📝 Text, der 1:1 in die E-Mail kopiert wird (ohne HTML)
+  const emailText = `
+Sehr geehrte Damen und Herren,
 
-besteht derzeit ein offener Betrag.
+zu nachstehender Rechnung ist bislang kein Zahlungseingang bei uns eingelangt:
 
-Die Rechnung ist nun seit ${diff} Tagen überfällig.
+Rechnungsnummer: ${inv.id}
+${custLine ? custLine + '\n' : ''}Betrag: ${inv.amount.toFixed(2)} €
+Fällig am: ${dueDate}
+Die Rechnung ist derzeit seit ${daysDiff} Tagen überfällig.
 
-Verzugszinsen: ${interest.toFixed(2)} €
-Mahngebühr: ${fee.toFixed(2)} €
+Wir erlauben uns daher, Verzugszinsen und Mahnspesen zu verrechnen:
+Verzugszinsen (${(yearlyRate*100).toFixed(2)} % p.a., ${daysDiff} Tage): ${interest.toFixed(2)} €
+Mahngebühr (Stufe ${nextLevel}): ${fee.toFixed(2)} €
 
 GESAMT OFFEN: ${total.toFixed(2)} €
 
-Bitte begleichen Sie den Betrag innerhalb der nächsten 7 Tage.
+Bitte überweisen Sie den Gesamtbetrag in Höhe von ${total.toFixed(2)} € innerhalb von 7 Tagen auf das angegebene Konto.
+Sollten Sie die Zahlung bereits veranlasst haben, betrachten Sie dieses Schreiben bitte als gegenstandslos.
 
-Mit freundlichen Grüßen 
+Mit freundlichen Grüßen
+
 Aichmayr Technology
-  `.trim();
+`.trim();
 
   document.getElementById("list").innerHTML = `
     <div class="card">
-      <h2>Mahnung generieren</h2>
-      <textarea id="mahntext">${text}</textarea><br><br>
-      <button onclick="saveReminder('${id}')">Mahnung markieren</button>
-      <button onclick="window.print()">Drucken</button>
-      <button onclick="render()" style="margin-left:8px;">Zurück</button>
+      <div class="reminderDoc">
+        <div class="reminderHeader">
+          <div>
+            <div class="reminderTitle">Aichmayr Technology</div>
+            <div style="font-size:12px;color:#555;">Mahnung · Stufe ${nextLevel}</div>
+          </div>
+          <div class="reminderMeta">
+            <div>${todayISO}</div>
+            <div>Rechnungs-Nr.: <b>${inv.id}</b></div>
+            ${inv.customerNo ? `<div>Kundennr.: ${inv.customerNo}</div>` : ""}
+            <div>Kunde: ${inv.client}</div>
+            <div>Fällig am: ${dueDate}</div>
+          </div>
+        </div>
+
+        <table class="reminderTable">
+          <tr>
+            <th>Position</th>
+            <th style="text-align:right;">Betrag</th>
+          </tr>
+          <tr>
+            <td>Offener Rechnungsbetrag</td>
+            <td style="text-align:right;">${inv.amount.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <td>Verzugszinsen (${(yearlyRate*100).toFixed(2)} % p.a., ${daysDiff} Tage)</td>
+            <td style="text-align:right;">${interest.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <td>Mahngebühr (Stufe ${nextLevel})</td>
+            <td style="text-align:right;">${fee.toFixed(2)} €</td>
+          </tr>
+          <tr>
+            <td><b>GESAMT OFFEN</b></td>
+            <td style="text-align:right;"><b>${total.toFixed(2)} €</b></td>
+          </tr>
+        </table>
+
+        <h3 style="margin-top:20px; font-size:16px;">Text für E-Mail kopieren:</h3>
+        <textarea id="emailTextToCopy" style="width:100%; height:200px; padding:10px; font-family:monospace; font-size:12px; background:#111; color:#fff; border:1px solid #444; border-radius:8px;">${emailText}</textarea>
+
+        <div class="reminderText" style="margin-top:10px;">
+          *Der obige Text entspricht dem Inhalt der unten stehenden Mahnung.
+        </div>
+      </div>
+
+      <div class="buttonsBar" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button onclick="saveReminder('${id}')">Mahnstufe erhöhen / markieren</button>
+        <button id="copyButton" onclick="copyEmailText()">Text für E-Mail kopieren</button>
+        <button onclick="window.print()">Drucken / PDF</button>
+        <button onclick="render()" style="margin-left:auto;">Zurück</button>
+      </div>
     </div>
   `;
 }
 
-// =======================================
 // Mahnstufe erhöhen
-// =======================================
 function saveReminder(id){
   let list = loadInvoices();
   let inv = list.find(x=>x.id === id);
   if(!inv) return;
 
-  inv.reminderLevel += 1;
-  inv.lastReminder = new Date().toISOString().slice(0,10);
+  inv.reminderLevel = (inv.reminderLevel || 0) + 1;
+  inv.lastReminder   = getTodayISO();
 
   saveInvoices(list);
   render();
 }
 
+// Initialer Aufruf der Liste
 render();
 </script>
 

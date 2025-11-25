@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>JARVIS OS · DarkOps Launcher</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jarvis OS">
+<meta name="theme-color" content="#000000">
+
+<link rel="apple-touch-icon" href="A_digital_vector_image_presents_a_circular_logo_wi.png">
+<link rel="icon" href="A_digital_vector_image_presents_a_circular_logo_wi.png">
+
+<style>
+:root{
+  --bg:#000000;
+  --panel:#05070b;
+  --card:#0b0d11;
+  --border:1px solid rgba(148,163,184,0.35);
+  --accent:#1a9cff;
+  --accent-soft:#111827;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --radius:14px;
+}
+
+*{box-sizing:border-box;}
+
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  height:100%;
+}
+
+/* BOOTSCREEN */
+#bootScreen{
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  text-align:center;
+  padding:20px;
+}
+
+.boot-logo{
+  width:96px;
+  height:96px;
+  border-radius:50%;
+  border:2px solid #fff;
+  margin-bottom:16px;
+  object-fit:cover;
+}
+
+.boot-title{
+  font-size:18px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.boot-sub{
+  font-size:11px;
+  color:#9ca3af;
+  margin-top:4px;
+}
+
+.boot-bar-wrap{
+  width:160px;
+  height:4px;
+  border-radius:999px;
+  background:#111827;
+  margin-top:18px;
+  overflow:hidden;
+}
+.boot-bar{
+  width:35%;
+  height:100%;
+  border-radius:999px;
+  background:#1a9cff;
+  animation:bootmove 1.3s infinite ease-in-out;
+}
+
+@keyframes bootmove{
+  0%{transform:translateX(-120%);}
+  50%{transform:translateX(40%);}
+  100%{transform:translateX(160%);}
+}
+
+/* LOCKSCREEN */
+#lockScreen{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at top,#020617 0,#000 70%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:9000;
+  text-align:center;
+  padding:20px;
+  display:none;
+}
+
+.lock-card{
+  background:#020617;
+  border-radius:var(--radius);
+  border:var(--border);
+  padding:18px 18px 16px;
+  max-width:320px;
+  width:100%;
+  box-shadow:0 20px 50px rgba(0,0,0,0.8);
+}
+
+.lock-logo{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  border:2px solid #fff;
+  object-fit:cover;
+  margin-bottom:8px;
+}
+
+.lock-title{
+  font-size:14px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.lock-sub{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.lock-input{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.lock-input input{
+  flex:1;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid rgba(148,163,184,0.7);
+  background:#020617;
+  color:var(--text);
+  font-size:14px;
+  text-align:center;
+  letter-spacing:4px;
+}
+
+.lock-btn{
+  padding:8px 12px;
+  border-radius:10px;
+  border:none;
+  background:var(--accent);
+  color:#020617;
+  font-weight:700;
+  font-size:12px;
+  cursor:pointer;
+  text-transform:uppercase;
+}
+
+.lock-hint{
+  margin-top:6px;
+  font-size:10px;
+  color:var(--muted);
+}
+
+/* HEADER */
+header{
+  padding:14px 18px;
+  padding-top:calc(14px + env(safe-area-inset-top));
+  border-bottom:1px solid rgba(148,163,184,0.3);
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+header img{
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  border:2px solid #e5e7eb;
+  object-fit:cover;
+}
+
+.head-main{
+  font-size:14px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  font-weight:700;
+}
+
+.head-sub{
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:1.4px;
+}
+
+/* STATUS BAR */
+.status-bar{
+  padding:8px 18px 4px;
+  font-size:11px;
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+  background:linear-gradient(to right,#020617,#030712);
+}
+
+.status-left span,
+.status-right span{
+  margin-right:10px;
+  color:var(--muted);
+}
+
+/* GRID */
+main{
+  padding:14px 14px calc(18px + env(safe-area-inset-bottom));
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px;
+}
+
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  border:1px solid rgba(148,163,184,0.45);
+  padding:12px 10px;
+  min-height:90px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  cursor:pointer;
+  transition:0.15s;
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+}
+
+.card:hover{
+  border-color:#e5e7eb;
+  background:#111827;
+}
+
+.card:active{
+  transform:translateY(1px) scale(0.99);
+}
+
+.card-title{
+  font-size:13px;
+  font-weight:600;
+}
+
+.card-sub{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.card-foot{
+  font-size:10px;
+  color:#6b7280;
+  margin-top:8px;
+}
+
+/* FOOTER */
+footer{
+  padding:6px 14px 10px;
+  border-top:1px solid rgba(15,23,42,0.8);
+  font-size:10px;
+  color:#6b7280;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.footer-left span{
+  margin-right:8px;
+}
+
+.footer-right button{
+  font-size:10px;
+  padding:5px 8px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.7);
+  background:#020617;
+  color:#e5e7eb;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- BOOTSCREEN -->
+<div id="bootScreen">
+  <img src="A_digital_vector_image_presents_a_circular_logo_wi.png" class="boot-logo" alt="DarkOps Patch">
+  <div class="boot-title">JARVIS OS · DARKOPS</div>
+  <div class="boot-sub">Aichmayr Technology · Local Business Core</div>
+  <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
+</div>
+
+<!-- LOCKSCREEN -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <img src="A_digital_vector_image_presents_a_circular_logo_wi.png" class="lock-logo" alt="Patch">
+    <div class="lock-title">UNIT: JARVIS-V4 · OPS-01</div>
+    <div class="lock-sub">Zugriff geschützt · PIN erforderlich</div>
+    <div class="lock-input">
+      <input id="pinInput" type="password" maxlength="6" autocomplete="off" placeholder="••••">
+      <button class="lock-btn" onclick="unlock()">Unlock</button>
+    </div>
+    <div class="lock-hint">
+      Default-PIN im Code: <b>1103</b> (Zeile mit <code>const MASTER_PIN</code>) – kannst du dort ändern.
+    </div>
+  </div>
+</div>
+
+<header>
+  <img src="A_digital_vector_image_presents_a_circular_logo_wi.png" alt="Aichmayr Patch">
+  <div>
+    <div class="head-main">Aichmayr Technology · Jarvis OS</div>
+    <div class="head-sub">DarkOps Business Core · Commander: Aichmayr</div>
+  </div>
+</header>
+
+<div class="status-bar">
+  <div class="status-left">
+    <span id="statusTime">TIME: --:--</span>
+    <span id="statusLast">LAST: –</span>
+  </div>
+  <div class="status-right">
+    <span id="statusHint">HINT: Tippe „rechnung“ im Jarvis-Modul.</span>
+  </div>
+</div>
+
+<main>
+  <div class="grid">
+
+    <div class="card" onclick="openModule('jarvis_v4_darkops_mobile.html','JARVIS KONSOLE')">
+      <div>
+        <div class="card-title">🔥 Jarvis Konsole</div>
+        <div class="card-sub">DarkOps Chat, Befehle (rechnung, angebot, termin ...).</div>
+      </div>
+      <div class="card-foot">File: jarvis_v4_darkops_mobile.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('angebot.html','ANGEBOT')">
+      <div>
+        <div class="card-title">📄 Angebot</div>
+        <div class="card-sub">Angebote mit Positionen, PDF über Drucken.</div>
+      </div>
+      <div class="card-foot">File: angebot.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('rechnung.html','RECHNUNG')">
+      <div>
+        <div class="card-title">💰 Rechnung</div>
+        <div class="card-sub">Rechnungsgenerator, Zahlungsziel, Kleinunternehmer-Text.</div>
+      </div>
+      <div class="card-foot">File: rechnung.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('kundenanlegen.html','KUNDEN')">
+      <div>
+        <div class="card-title">🧑‍💼 Kunden</div>
+        <div class="card-sub">Kundenanlage, Kundennummern, Stammdaten.</div>
+      </div>
+      <div class="card-foot">File: kundenanlegen.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('projekt.html','GROSSPROJEKTE')">
+      <div>
+        <div class="card-title">🚀 Großprojekte</div>
+        <div class="card-sub">11k-Volumen, Anzahlungen, Restbeträge & Status.</div>
+      </div>
+      <div class="card-foot">File: projekt.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('zeit.html','ZEITERFASSUNG')">
+      <div>
+        <div class="card-title">⏱ Zeiterfassung</div>
+        <div class="card-sub">Arbeitszeiten pro Kunde / Projekt tracken.</div>
+      </div>
+      <div class="card-foot">File: zeit.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('spesen.html','SPESEN')">
+      <div>
+        <div class="card-title">🧾 Spesen</div>
+        <div class="card-sub">Reisekosten, Tickets, Kilometer, CSV-Export.</div>
+      </div>
+      <div class="card-foot">File: spesen.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('lagerbestand.html','LAGER')">
+      <div>
+        <div class="card-title">📦 Lagerbestand</div>
+        <div class="card-sub">Artikel, Bestände, Mindestmengen, Suche.</div>
+      </div>
+      <div class="card-foot">File: lagerbestand.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('termine.html','TERMINE')">
+      <div>
+        <div class="card-title">📅 Termine</div>
+        <div class="card-sub">Kalender, Kundentermine, Projekt-Timeline.</div>
+      </div>
+      <div class="card-foot">File: termine.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('mahnwesen.html','MAHNWESEN')">
+      <div>
+        <div class="card-title">⚠️ Mahnwesen</div>
+        <div class="card-sub">Offene Rechnungen, Mahnstufen, Fälligkeiten.</div>
+      </div>
+      <div class="card-foot">File: mahnwesen.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('umsatz.html','UMSATZ')">
+      <div>
+        <div class="card-title">📊 Umsatz</div>
+        <div class="card-sub">Gesamtumsatz, Filter & CSV-Backup.</div>
+      </div>
+      <div class="card-foot">File: umsatz.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('search.html','SUCHE')">
+      <div>
+        <div class="card-title">🔎 Suche</div>
+        <div class="card-sub">Globale Suche über Kunden / Projekte / Daten.</div>
+      </div>
+      <div class="card-foot">File: search.html</div>
+    </div>
+
+    <div class="card" onclick="openModule('quickstart.html','QUICKSTART')">
+      <div>
+        <div class="card-title">📘 QuickStart</div>
+        <div class="card-sub">Doku & Übersicht über das ganze System.</div>
+      </div>
+      <div class="card-foot">File: quickstart.html</div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-left">
+    <span>Jarvis OS · DarkOps Build V4.2</span>
+    <span id="footerLastAction">Last: –</span>
+  </div>
+  <div class="footer-right">
+    <button onclick="createBackup()">Backup jetzt</button>
+    <button onclick="exportConfig()">Export Config</button>
+  </div>
+</footer>
+<script>
+/* ============================================================
+   JARVIS OS · SECURITY CORE V1
+   PIN · PASSWORD · AES · DEVICE LOCK · ADMIN MODE
+   ============================================================ */
+
+(function(){
+
+/* -----------------------
+   CONFIG
+----------------------- */
+const SECURITY_KEY = "jarvis_security";
+const ADMIN_PIN = "1103"; // geändert, du kannst auf eigene PIN ändern
+const MASTER_PASSWORD_HASH = "c5e478d59288c841aa530db6845c4c8d96289398cd4a1ca7e6f7f1f1f1f1f1f1";
+const LOCK_TIME = 30000; // 30 Sekunden Sperre
+
+/* -----------------------
+   LOAD SECURITY STATE
+----------------------- */
+let sec = JSON.parse(localStorage.getItem(SECURITY_KEY) || "{}");
+if(!sec.deviceId){
+  sec.deviceId = crypto.randomUUID();
+  sec.failedAttempts = 0;
+  sec.lockUntil = 0;
+  sec.role = "admin";
+  localStorage.setItem(SECURITY_KEY, JSON.stringify(sec));
+}
+
+/* -----------------------
+   AES ENCRYPTION HELPERS
+----------------------- */
+async function hash(t){
+  const data = new TextEncoder().encode(t);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+
+/* Popup UI für PIN */
+function injectPinUI(){
+
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
+    position:fixed; inset:0;
+    background:#000; display:flex; align-items:center; justify-content:center;
+    z-index:999999; flex-direction:column; color:#fff; font-family:system-ui;
+  `;
+
+  const box = document.createElement("div");
+  box.style.cssText = `text-align:center;`;
+
+  box.innerHTML = `
+    <div style="font-size:20px; margin-bottom:12px; letter-spacing:1.5px;">
+      JARVIS SECURITY LOCK
+    </div>
+    <input id="pinInput" type="password" maxlength="6"
+      style="padding:10px 14px; font-size:18px; border-radius:8px;
+      text-align:center; border:1px solid #555; background:#111; color:#fff; width:160px;">
+    <div id="pinMsg" style="margin-top:10px; font-size:12px; color:#aaa;"></div>
+    <button id="pinBtn" style="margin-top:16px; padding:10px 16px;
+      background:#fff; color:#000; border-radius:8px; border:none; font-weight:600;">
+      Unlock
+    </button>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById("pinBtn").onclick = async ()=>{
+
+    const pin = document.getElementById("pinInput").value.trim();
+
+    if(Date.now() < sec.lockUntil){
+      document.getElementById("pinMsg").textContent =
+        "Locked. Try again in " + Math.ceil((sec.lockUntil - Date.now())/1000) + "s.";
+      return;
+    }
+
+    if(pin === ADMIN_PIN){
+      sec.failedAttempts = 0;
+      sec.role = "admin";
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(sec));
+      overlay.remove();
+      return;
+    }
+
+    // optional MASTER PASSWORD
+    const pinHash = await hash(pin);
+    if(pinHash === MASTER_PASSWORD_HASH){
+      sec.failedAttempts = 0;
+      sec.role = "admin";
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(sec));
+      overlay.remove();
+      return;
+    }
+
+    // fail
+    sec.failedAttempts++;
+    localStorage.setItem(SECURITY_KEY, JSON.stringify(sec));
+
+    if(sec.failedAttempts >= 3){
+      sec.lockUntil = Date.now() + LOCK_TIME;
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(sec));
+      document.getElementById("pinMsg").textContent =
+        "Too many attempts. Locked for 30 seconds.";
+      return;
+    }
+
+    document.getElementById("pinMsg").textContent = "Incorrect PIN.";
+  };
+}
+
+/* DEVICE CHECK */
+if(!sec.deviceTrusted){
+  sec.deviceTrusted = true;
+  localStorage.setItem(SECURITY_KEY, JSON.stringify(sec));
+  injectPinUI();
+} else {
+  injectPinUI();
+}
+
+})();
+</script>
+<script>
+// ====== BASIC SETTINGS ======
+const MASTER_PIN = "1103"; // <-- hier kannst du deinen PIN ändern
+let lastModule = null;
+
+// ====== BOOT & LOCK LOGIK ======
+const boot = document.getElementById('bootScreen');
+const lock = document.getElementById('lockScreen');
+const pinInput = document.getElementById('pinInput');
+
+setTimeout(()=>{
+  if(boot) boot.style.display = "none";
+  if(lock) {
+    lock.style.display = "flex";
+    pinInput && pinInput.focus();
+  }
+}, 1400);
+
+function unlock(){
+  const v = pinInput.value.trim();
+  if(v === MASTER_PIN){
+    lock.style.display = "none";
+    clickBeep();
+  } else {
+    pinInput.value = "";
+    pinInput.placeholder = "Falsch";
+    shake(pinInput);
+  }
+}
+
+pinInput.addEventListener('keydown', e=>{
+  if(e.key === "Enter") unlock();
+});
+
+function shake(el){
+  el.style.transition = "transform 0.1s";
+  el.style.transform = "translateX(-4px)";
+  setTimeout(()=>{el.style.transform="translateX(4px)";},80);
+  setTimeout(()=>{el.style.transform="translateX(0)";},160);
+}
+
+// ====== UHR & STATUS ======
+function updateTime(){
+  const t = new Date();
+  const h = String(t.getHours()).padStart(2,"0");
+  const m = String(t.getMinutes()).padStart(2,"0");
+  document.getElementById('statusTime').textContent = "TIME: " + h + ":" + m;
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// ====== OPEN MODULE + INTELLIGENCE ======
+function openModule(file,label){
+  lastModule = label || file;
+  document.getElementById('statusLast').textContent = "LAST: " + (lastModule || "–");
+  document.getElementById('footerLastAction').textContent = "Last: " + (lastModule || "–");
+  updateHint(label || file);
+  clickBeep();
+  window.location.href = file;
+}
+
+function updateHint(label){
+  const h = document.getElementById('statusHint');
+  if(!h) return;
+  label = (label || "").toUpperCase();
+  if(label.includes("RECHNUNG")){
+    h.textContent = "HINT: In Jarvis 'rechnung' tippen, um direkt den Generator zu öffnen.";
+  } else if(label.includes("ANGEBOT")){
+    h.textContent = "HINT: Nutze 'auftrag 8 stunden' in Jarvis, um Angebot zu triggern.";
+  } else if(label.includes("ZEIT")){
+    h.textContent = "HINT: Tag starten → Zeiterfassung → später mit Rechnung verknüpfen.";
+  } else if(label.includes("SPESEN")){
+    h.textContent = "HINT: Jeden Trip sofort als Eintrag in Spesen erfassen.";
+  } else if(label.includes("PROJEKT")){
+    h.textContent = "HINT: Großprojekte dort mit Gesamtvolumen & Anzahlungen tracken.";
+  } else {
+    h.textContent = "HINT: In der Jarvis Konsole Befehle wie 'rechnung', 'projekt', 'termin' nutzen.";
+  }
+}
+
+// ====== SIMPLE AUDIO CLICK (OPTIONAL) ======
+function clickBeep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = 880;
+    gain.gain.value = 0.05;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    setTimeout(()=>{osc.stop();ctx.close();},80);
+  }catch(e){}
+}
+
+// ====== BACKUP & CONFIG EXPORT (LOCAL) ======
+function createBackup(){
+  const snapshot = {};
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    snapshot[k] = localStorage.getItem(k);
+  }
+  const backups = JSON.parse(localStorage.getItem("jarvisBackups") || "[]");
+  backups.push({
+    time: new Date().toISOString(),
+    data: snapshot
+  });
+  localStorage.setItem("jarvisBackups","" + JSON.stringify(backups));
+  alert("Lokales Backup im Browser gespeichert. (Key: jarvisBackups)");
+}
+
+function exportConfig(){
+  const cfg = {
+    timestamp:new Date().toISOString(),
+    masterPinLength: MASTER_PIN.length,
+    lastModule:lastModule,
+    modules:[
+      "jarvis_v4_darkops_mobile.html",
+      "angebot.html","rechnung.html","kundenanlegen.html",
+      "projekt.html","zeit.html","spesen.html",
+      "lagerbestand.html","termine.html","mahnwesen.html",
+      "umsatz.html","search.html","quickstart.html"
+    ]
+  };
+  const blob = new Blob([JSON.stringify(cfg,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "jarvis_config_backup.json";
+  a.click();
+}
+</script>
+
+</body>
+</html>
