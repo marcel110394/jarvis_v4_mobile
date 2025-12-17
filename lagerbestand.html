@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <title>JARVIS-V4 · Lagerbestand · OPS-01</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <style>
+    /* ============================================
+     DARKOPS LAGERBESTAND MODULE
+     ============================================ */
+    :root {
+      --color-bg: #000;
+      --color-fg: #fff;
+      --color-dark-element: #0a0a0a;
+      --color-border-subtle: rgba(255, 255, 255, 0.12);
+      --color-border-strong: rgba(255, 255, 255, 0.25);
+      --color-accent: #ffffff;
+      --color-danger: #b00020;
+      --color-pill: rgba(255, 255, 255, 0.3);
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--color-bg);
+      color: var(--color-fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      height: 100%;
+    }
+
+    @supports (height: 100dvh) {
+      body {
+        height: 100dvh;
+      }
+    }
+
+    /* HEADER */
+    header {
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      border-bottom: 1px solid var(--color-border-subtle);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--color-bg);
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .header-sub {
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: #aaa;
+    }
+
+    .btn-ghost-header {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      font-size: 11px;
+      font-weight: 600;
+      background: transparent;
+      color: var(--color-fg);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* LAYOUT */
+    main {
+      padding: 12px 14px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+
+    h2 {
+      margin: 8px 0 4px;
+      font-size: 13px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .info {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    form input,
+    form textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border-strong);
+      background: var(--color-dark-element);
+      color: var(--color-fg);
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    form input::placeholder,
+    form textarea::placeholder {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    form textarea {
+      grid-column: 1 / span 2;
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--color-accent);
+      color: #000;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-fg);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-danger {
+      background: var(--color-danger);
+      color: #fff;
+    }
+
+    .actions {
+      grid-column: 1 / span 2;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .actions .btn-danger {
+      margin-left: auto;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      margin-bottom: 4px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .list-header input {
+      max-width: 220px;
+      padding: 6px 8px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: 1px solid var(--color-border-strong);
+      background: var(--color-dark-element);
+      color: var(--color-fg);
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--color-pill);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .list {
+      border-top: 1px solid var(--color-border-subtle);
+      margin-top: 4px;
+    }
+
+    .entry {
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .entry-main {
+      max-width: 70%;
+    }
+
+    .entry-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .entry-meta {
+      font-size: 12px;
+      color: #bbb;
+      line-height: 1.4;
+    }
+
+    .entry-notes {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .entry-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-end;
+    }
+
+    .entry-buttons button {
+      font-size: 11px;
+      padding: 4px 8px;
+    }
+
+    .stock-ok {
+      color: #7cf57c;
+    }
+
+    .stock-low {
+      color: #ffd966;
+    }
+
+    .stock-crit {
+      color: #ff6b6b;
+    }
+
+    .empty {
+      font-size: 12px;
+      color: #777;
+      padding: 8px 0;
+    }
+
+    .badge-editmode {
+      font-size: 11px;
+      color: #ffd966;
+    }
+
+    /* Scanner Box */
+    #scannerBox {
+      margin-bottom: 12px;
+    }
+
+    #qr-reader {
+      margin-top: 8px;
+      max-width: 320px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="header-title">
+      <span>JARVIS-V4 · LAGERBESTAND</span>
+      <span class="header-sub">OPS-01 · INVENTORY CONTROL</span>
+    </div>
+    <!-- zurück zum Jarvis-Hauptmodul -->
+    <button class="btn-ghost-header" onclick="location.href='jarvis_v4_darkops_mobile.html'">Zurück</button>
+  </header>
+
+  <main>
+    <h2>Artikelverwaltung</h2>
+
+    <!-- Scanner-Hinweis + Button -->
+    <div class="info">
+      Optional: Barcode / QR mit Kamera scannen – Ergebnis landet im Feld „SKU“.
+    </div>
+    <div id="scannerBox">
+      <button type="button" class="btn-ghost" onclick="toggleScanner()">Scanner starten / stoppen</button>
+      <div id="qr-reader"></div>
+    </div>
+
+    <div class="info" id="editInfo">
+      Neuer Artikel – Felder ausfüllen und speichern.<br>
+      Tipp: SKU z. B. „ESP32-DEVKIT“, Kategorie z. B. „Elektronik“.
+    </div>
+
+    <form id="form">
+      <input type="text" id="name" placeholder="Artikelname*" required>
+      <input type="text" id="sku" placeholder="SKU / Artikelnummer">
+      <input type="text" id="category" placeholder="Kategorie (z.B. Elektronik)">
+      <input type="number" id="stock" placeholder="Bestand" step="1" min="0">
+      <input type="number" id="minStock" placeholder="Mindestbestand" step="1" min="0">
+      <input type="number" id="buyPrice" placeholder="Einkaufspreis (€)" step="0.01" min="0">
+      <input type="number" id="sellPrice" placeholder="Verkaufspreis (€)" step="0.01" min="0">
+      <textarea id="notes" placeholder="Notizen (Lieferant, Besonderheiten, etc.)"></textarea>
+      <div class="actions">
+        <button type="submit" class="btn-primary">Speichern</button>
+        <button type="button" class="btn-ghost" onclick="resetForm()">Reset</button>
+        <button type="button" class="btn-danger" onclick="deleteAll()">Alles löschen</button>
+      </div>
+    </form>
+
+    <h2>Lagerübersicht</h2>
+    <div class="list-header">
+      <div class="pill" id="summaryPill">0 Artikel · Gesamtbestand 0</div>
+      <input type="text" id="filter" placeholder="Suche (Name, SKU, Kategorie)" oninput="renderList()">
+    </div>
+    <div id="list" class="list"></div>
+  </main>
+
+  <!-- QR / Barcode Scanner Bibliothek (Kamera) -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <script>
+    let editIndex = null; // null = Neuanlage
+
+    // Scanner-Variablen
+    let scannerActive = false;
+    let html5QrcodeScannerInstance = null;
+
+    function toggleScanner() {
+      const target = document.getElementById("qr-reader");
+
+      // Scanner stoppen
+      if (scannerActive) {
+        if (html5QrcodeScannerInstance) {
+          html5QrcodeScannerInstance.clear().catch(err => console.error(err));
+          html5QrcodeScannerInstance = null;
+        }
+        if (target) target.innerHTML = "";
+        scannerActive = false;
+        return;
+      }
+
+      // Scanner starten
+      if (!window.Html5QrcodeScanner) {
+        alert("Scanner-Bibliothek nicht geladen. Internetverbindung + https nötig.");
+        return;
+      }
+
+      const onScanSuccess = (decodedText, decodedResult) => {
+        // Ergebnis in SKU schreiben
+        document.getElementById("sku").value = decodedText;
+        const stockEl = document.getElementById("stock");
+        if (stockEl) stockEl.focus();
+        // nach einem Treffer wieder stoppen
+        toggleScanner();
+      };
+
+      html5QrcodeScannerInstance = new Html5QrcodeScanner(
+        "qr-reader",
+        { fps: 10, qrbox: 200 },
+        false
+      );
+      html5QrcodeScannerInstance.render(onScanSuccess);
+      scannerActive = true;
+    }
+
+    function loadInventory() {
+      return JSON.parse(localStorage.getItem("inventory") || "[]");
+    }
+    function saveInventory(list) {
+      localStorage.setItem("inventory", JSON.stringify(list));
+    }
+
+    function resetForm() {
+      document.getElementById("form").reset();
+      editIndex = null;
+      document.getElementById("editInfo").innerHTML =
+        'Neuer Artikel – Felder ausfüllen und speichern.<br>' +
+        'Tipp: SKU z. B. „ESP32-DEVKIT“, Kategorie z. B. „Elektronik“.';
+    }
+
+    function deleteAll() {
+      if (!confirm("Wirklich alle Lagerdaten löschen?")) return;
+      localStorage.removeItem("inventory");
+      renderList();
+      resetForm();
+    }
+
+    function renderList() {
+      const listEl = document.getElementById("list");
+      const filterVal = (document.getElementById("filter").value || "").toLowerCase();
+      const data = loadInventory().sort((a, b) => {
+        return (a.name || "").localeCompare(b.name || "");
+      });
+
+      let totalItems = data.length;
+      let totalStock = data.reduce((s, x) => s + (Number(x.stock) || 0), 0);
+      document.getElementById("summaryPill").textContent =
+        `${totalItems} Artikel · Gesamtbestand ${totalStock}`;
+
+      if (data.length === 0) {
+        listEl.innerHTML = '<div class="empty">Keine Artikel im Lager erfasst.</div>';
+        return;
+      }
+
+      listEl.innerHTML = "";
+
+      data.forEach((t, idx) => {
+        const haystack = (t.name + " " + (t.sku || "") + " " + (t.category || "")).toLowerCase();
+        if (filterVal && !haystack.includes(filterVal)) return;
+
+        const stock = Number(t.stock) || 0;
+        const min = Number(t.minStock) || 0;
+        let stockClass = "stock-ok";
+        let stockLabel = "OK";
+        if (min > 0 && stock <= min && stock > 0) {
+          stockClass = "stock-low";
+          stockLabel = "Niedrig";
+        }
+        if (min > 0 && stock <= 0) {
+          stockClass = "stock-crit";
+          stockLabel = "Leer";
+        }
+
+        const div = document.createElement("div");
+        div.className = "entry";
+
+        div.innerHTML = `
+      <div class="entry-main">
+        <div class="entry-title">${t.name || "-"}</div>
+        <div class="entry-meta">
+          SKU: ${t.sku || "-"} · Kat.: ${t.category || "-"}<br>
+          Bestand: <span class="${stockClass}">${stock}</span> (min. ${min || 0}) ·
+          EK: ${t.buyPrice ? Number(t.buyPrice).toFixed(2) + " €" : "-"} ·
+          VK: ${t.sellPrice ? Number(t.sellPrice).toFixed(2) + " €" : "-"}<br>
+          Status: <span class="${stockClass}">${stockLabel}</span>
+        </div>
+        ${t.notes ? `<div class="entry-notes">${t.notes}</div>` : ""}
+      </div>
+      <div class="entry-buttons">
+        <button class="btn-ghost" onclick="adjustStock(${idx}, 1)">+1</button>
+        <button class="btn-ghost" onclick="adjustStock(${idx}, -1)">-1</button>
+        <button class="btn-ghost" onclick="promptAdjust(${idx}, true)">Zugang</button>
+        <button class="btn-ghost" onclick="promptAdjust(${idx}, false)">Abgang</button>
+        <button class="btn-ghost" onclick="editItem(${idx})">Bearbeiten</button>
+        <button class="btn-danger" onclick="deleteItem(${idx})">Löschen</button>
+      </div>
+    `;
+        listEl.appendChild(div);
+      });
+
+      if (!listEl.innerHTML) {
+        listEl.innerHTML = '<div class="empty">Keine Artikel entsprechen dem Filter.</div>';
+      }
+    }
+
+    function adjustStock(index, delta) {
+      const data = loadInventory();
+      if (!data[index]) return;
+      let current = Number(data[index].stock) || 0;
+      current += delta;
+      if (current < 0) current = 0;
+      data[index].stock = current;
+      data[index].updated = new Date().toISOString();
+      saveInventory(data);
+      renderList();
+    }
+
+    function promptAdjust(index, isIn) {
+      const amountStr = prompt(isIn ? "Zugang – Menge hinzufügen:" : "Abgang – Menge abziehen:");
+      if (!amountStr) return;
+      const val = parseInt(amountStr);
+      if (isNaN(val) || val === 0) return;
+      adjustStock(index, isIn ? val : -val);
+    }
+
+    function editItem(index) {
+      const data = loadInventory();
+      const t = data[index];
+      if (!t) return;
+      editIndex = index;
+
+      document.getElementById("name").value = t.name || "";
+      document.getElementById("sku").value = t.sku || "";
+      document.getElementById("category").value = t.category || "";
+      document.getElementById("stock").value = t.stock || 0;
+      document.getElementById("minStock").value = t.minStock || 0;
+      document.getElementById("buyPrice").value = t.buyPrice || "";
+      document.getElementById("sellPrice").value = t.sellPrice || "";
+      document.getElementById("notes").value = t.notes || "";
+
+      document.getElementById("editInfo").innerHTML =
+        `<span class="badge-editmode">Bearbeitungsmodus</span><br>` +
+        `Artikel „${t.name || "-"}“ wird bearbeitet. Speichern überschreibt den Datensatz.`;
+    }
+
+    function deleteItem(index) {
+      const data = loadInventory();
+      const t = data[index];
+      if (!t) return;
+      if (!confirm(`Artikel „${t.name || "-"}“ wirklich löschen?`)) return;
+      data.splice(index, 1);
+      saveInventory(data);
+      renderList();
+      resetForm();
+    }
+
+    document.getElementById("form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const sku = document.getElementById("sku").value.trim();
+      const category = document.getElementById("category").value.trim();
+      const stock = Number(document.getElementById("stock").value || 0);
+      const minStock = Number(document.getElementById("minStock").value || 0);
+      const buyPrice = document.getElementById("buyPrice").value;
+      const sellPrice = document.getElementById("sellPrice").value;
+      const notes = document.getElementById("notes").value.trim();
+      const barcode = document.getElementById("barcode") ? document.getElementById("barcode").value.trim() : "";
+
+      if (!name) return;
+
+      const data = loadInventory();
+      const item = {
+        name,
+        sku,
+        category,
+        stock,
+        minStock,
+        buyPrice,
+        sellPrice,
+        notes,
+        barcode,
+        updated: new Date().toISOString()
+      };
+
+      if (editIndex === null) {
+        data.push(item);
+      } else {
+        data[editIndex] = item;
+      }
+
+      saveInventory(data);
+      renderList();
+      resetForm();
+    });
+
+    /* NEU: Scan-Modus aus Jarvis abfangen */
+    document.addEventListener('DOMContentLoaded', () => {
+      const scanMode = localStorage.getItem('inventoryScanMode');
+      if (scanMode === '1') {
+        localStorage.removeItem('inventoryScanMode');
+
+        const info = document.getElementById('editInfo');
+        if (info) {
+          info.innerHTML =
+            '<span class="badge-editmode">Scan-Modus aktiv</span><br>' +
+            'Bitte Barcode mit dem Scanner einlesen – Jarvis sucht oder legt den Artikel an.';
+        }
+
+        const barcodeInput = document.getElementById('barcode');
+        if (barcodeInput) {
+          barcodeInput.focus();
+        }
+      }
+
+      renderList();
+    });
+
+
+    /* ===== Jarvis-Preload: Daten aus tempItem* übernehmen ===== */
+    document.addEventListener("DOMContentLoaded", () => {
+      const preloadMap = {
+        name: "tempItemName",
+        sku: "tempItemSku",
+        category: "tempItemCategory",
+        stock: "tempItemStock",
+        minStock: "tempItemMinStock",
+        buyPrice: "tempItemBuyPrice",
+        sellPrice: "tempItemSellPrice",
+        notes: "tempItemNotes"
+      };
+
+      let hasPre = false;
+      for (const fieldId in preloadMap) {
+        const key = preloadMap[fieldId];
+        const val = localStorage.getItem(key);
+        if (val !== null) {
+          const el = document.getElementById(fieldId);
+          if (el) el.value = val;
+          localStorage.removeItem(key);
+          hasPre = true;
+        }
+      }
+
+      if (hasPre) {
+        document.getElementById("editInfo").innerHTML =
+          'Daten aus JARVIS-Befehl übernommen – prüfen und speichern.<br>' +
+          'Optional kannst du den Artikel jetzt einscannen und den Bestand anpassen.';
+      }
+
+      renderList();
+    });
+  </script>
+</body>
+
+</html>

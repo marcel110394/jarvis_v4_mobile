@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Jarvis · Zeiterfassung</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    main {
+      padding: 12px 14px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h2 {
+      margin: 10px 0 4px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .info {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .card {
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 10px;
+      background: #050505;
+      margin-bottom: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .field-full {
+      grid-column: 1 / span 2;
+    }
+
+    label {
+      font-size: 11px;
+      color: #ccc;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: #080808;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    textarea {
+      min-height: 48px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: #111;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .btn-danger {
+      background: #b00020;
+      color: #fff;
+    }
+
+    .status {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .status-ok {
+      color: #7cf57c;
+    }
+
+    .status-warn {
+      color: #ffd966;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 6px 4px;
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #ccc;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #050505;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .empty {
+      font-size: 12px;
+      color: #777;
+      padding: 6px 0;
+    }
+
+    .pill {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .filter {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter select {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: #080808;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .timer-display {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .timer-project {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>Jarvis · Zeiterfassung</div>
+    <button class="btn-ghost" onclick="window.close()">Schließen</button>
+  </header>
+  <main>
+
+    <!-- Live Timer -->
+    <div class="card">
+      <h2>Live-Timer</h2>
+      <div class="info">Starte/stoppe deine Arbeitszeit – wird automatisch als Eintrag verbucht.</div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Projekt / Kunde</label>
+          <input id="t_project" placeholder="z. B. ACME – Workshop">
+        </div>
+        <div class="field">
+          <label>Stundensatz (€)</label>
+          <input type="number" id="t_rate" value="140">
+        </div>
+        <div class="field field-full">
+          <label>Beschreibung</label>
+          <input id="t_desc" placeholder="Kurzbeschreibung">
+        </div>
+      </div>
+
+      <div
+        style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div class="timer-display" id="t_time">00:00:00</div>
+          <div class="timer-project" id="t_status">Timer bereit.</div>
+        </div>
+        <div class="actions">
+          <button class="btn-primary" id="start" onclick="startTimer()">Start</button>
+          <button class="btn-secondary" id="stop" onclick="stopTimer()" disabled>Stop &amp; buchen</button>
+          <button class="btn-ghost" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manuelle Erfassung -->
+    <div class="card">
+      <h2>Manuelle Buchung</h2>
+
+      <form id="form">
+        <div class="grid">
+          <div class="field">
+            <label>Datum</label>
+            <input type="date" id="date">
+          </div>
+          <div class="field">
+            <label>Projekt</label>
+            <input id="project" placeholder="z. B. ACME">
+          </div>
+          <div class="field">
+            <label>Stunden</label>
+            <input type="number" step="0.1" id="hours">
+          </div>
+          <div class="field">
+            <label>Rate (€)</label>
+            <input type="number" id="rate" value="140">
+          </div>
+          <div class="field field-full">
+            <label>Beschreibung</label>
+            <input id="description" placeholder="Kurzbeschreibung">
+          </div>
+          <div class="field field-full">
+            <label>Notizen</label>
+            <textarea id="notes"></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary">Buchen</button>
+          <button type="button" class="btn-ghost" onclick="resetForm()">Reset</button>
+          <button type="button" class="btn-danger" onclick="deleteAll()" style="margin-left:auto;">Alles
+            löschen</button>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
+    </div>
+
+    <!-- Übersicht -->
+    <div class="card">
+      <h2>Übersicht</h2>
+
+      <div class="controls-row">
+        <div class="pill" id="summary">0 Einträge</div>
+
+        <div class="filter">
+          <select id="filterMonth" onchange="renderList()">
+            <option value="">Monat (alle)</option>
+          </select>
+          <select id="filterProj" onchange="renderList()">
+            <option value="">Projekt (alle)</option>
+          </select>
+
+          <button class="btn-secondary" type="button" onclick="exportTimeCSV()">CSV Export</button>
+        </div>
+      </div>
+
+      <div id="tableWrapper"></div>
+    </div>
+
+  </main>
+
+  <script>
+    function el(id) { return document.getElementById(id); }
+    function get() { return JSON.parse(localStorage.getItem("timeEntries") || "[]"); }
+    function save(x) { localStorage.setItem("timeEntries", JSON.stringify(x)); }
+    function money(x) { return (Math.round(Number(x) * 100) / 100).toFixed(2); }
+    function today() { return new Date().toISOString().slice(0, 10); }
+
+    (function init() {
+      el("date").value = today();
+      renderFilters();
+      renderList();
+    })();
+
+    /* MANUELLE BUCHUNG */
+    el("form").addEventListener("submit", e => {
+      e.preventDefault();
+      const hoursVal = parseFloat(el("hours").value || 0);
+      const rateVal = parseFloat(el("rate").value || 0);
+
+      if (!hoursVal) {
+        el("status").textContent = "Bitte Stunden eingeben.";
+        el("status").className = "status status-warn";
+        return;
+      }
+
+      const d = {
+        id: "T" + Date.now(),
+        date: el("date").value || today(),
+        project: el("project").value.trim(),
+        hours: hoursVal,
+        rate: rateVal,
+        amount: hoursVal * rateVal,
+        description: el("description").value.trim(),
+        notes: el("notes").value.trim(),
+        created: new Date().toISOString()
+      };
+
+      let list = get(); list.push(d); save(list);
+      el("status").textContent = "Zeitbuchung gespeichert.";
+      el("status").className = "status status-ok";
+      renderList();
+      renderFilters();
+    });
+
+    /* RESET */
+    function resetForm() {
+      el("form").reset();
+      el("date").value = today();
+      el("status").textContent = "";
+      el("status").className = "status";
+    }
+    function deleteAll() {
+      if (confirm("Alle Zeiterfassungs-Einträge löschen?")) {
+        localStorage.removeItem("timeEntries");
+        renderList();
+        renderFilters();
+      }
+    }
+
+    /* FILTERS */
+    function renderFilters() {
+      const data = get();
+      const m = new Set(), p = new Set();
+      data.forEach(e => {
+        if (e.date) m.add(e.date.slice(0, 7));
+        if (e.project) p.add(e.project);
+      });
+      el("filterMonth").innerHTML = '<option value="">Monat (alle)</option>';
+      [...m].sort().forEach(x => el("filterMonth").innerHTML += `<option>${x}</option>`);
+      el("filterProj").innerHTML = '<option value="">Projekt (alle)</option>';
+      [...p].sort().forEach(x => el("filterProj").innerHTML += `<option>${x}</option>`);
+    }
+
+    /* LISTE + SUMMARY */
+    function renderList() {
+      const data = get().sort((a, b) => a.date.localeCompare(b.date));
+      const mf = el("filterMonth").value;
+      const pf = el("filterProj").value;
+
+      const f = data.filter(e => {
+        if (mf && !e.date.startsWith(mf)) return false;
+        if (pf && e.project !== pf) return false;
+        return true;
+      });
+
+      const totalHours = f.reduce((s, e) => s + (Number(e.hours) || 0), 0);
+      const totalAmount = f.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+
+      el("summary").textContent = `${f.length} Einträge · ${money(totalHours)} h · ${money(totalAmount)} €`;
+
+      if (f.length === 0) {
+        el("tableWrapper").innerHTML = '<div class="empty">Keine Einträge gefunden.</div>';
+        return;
+      }
+      let html = '<table><thead><tr><th>Datum</th><th>Projekt</th><th>Beschreibung</th><th class="right">h</th><th class="right">Rate</th><th class="right">€</th></tr></thead><tbody>';
+      f.forEach(e => {
+        html += `<tr>
+      <td>${e.date}</td>
+      <td>${e.project || ""}</td>
+      <td>${e.description || ""}<br><span style="color:#777">${e.notes || ""}</span></td>
+      <td class="right">${money(e.hours)}</td>
+      <td class="right">${money(e.rate)}</td>
+      <td class="right">${money(e.amount)}</td>
+    </tr>`;
+      });
+      html += '</tbody></table>';
+      el("tableWrapper").innerHTML = html;
+    }
+
+    /* CSV EXPORT */
+    function exportTimeCSV() {
+      const data = get();
+      const sep = ";";
+      const head = ["id", "date", "project", "hours", "rate", "amount", "description", "notes", "created"];
+      const esc = x => `"${String(x).replace(/"/g, '""')}"`;
+      let lines = [head.join(sep)];
+      data.forEach(e => {
+        lines.push([
+          e.id, e.date, e.project,
+          e.hours, e.rate, e.amount,
+          e.description, e.notes, e.created
+        ].map(esc).join(sep));
+      });
+      const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "zeit.csv";
+      a.click();
+    }
+
+    /* LIVE TIMER */
+    let running = false, startMs = null, intv = null;
+
+    function startTimer() {
+      if (running) return;
+      running = true;
+      startMs = Date.now();
+      el("t_status").textContent = "Timer läuft…";
+      el("start").disabled = true;
+      el("stop").disabled = false;
+      intv = setInterval(updateTimer, 500);
+    }
+    function updateTimer() {
+      const diff = Date.now() - startMs;
+      const s = Math.floor(diff / 1000);
+      const h = String(Math.floor(s / 3600)).padStart(2, "0");
+      const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+      const sc = String(s % 60).padStart(2, "0");
+      el("t_time").textContent = `${h}:${m}:${sc}`;
+    }
+    function stopTimer() {
+      if (!running) return;
+      running = false;
+      clearInterval(intv);
+      const diff = Date.now() - startMs;
+      const hours = diff / 1000 / 3600;
+      const rate = parseFloat(el("t_rate").value || 0);
+      const amount = hours * rate;
+      const entry = {
+        id: "T" + Date.now(),
+        date: today(),
+        project: el("t_project").value.trim() || "UNSPECIFIED",
+        hours,
+        rate,
+        amount,
+        description: el("t_desc").value.trim() || "Timer",
+        notes: "",
+        created: new Date().toISOString()
+      };
+      let list = get(); list.push(entry); save(list);
+      el("t_status").textContent = `Gebucht: ${money(hours)} h · ${money(amount)} €`;
+      el("start").disabled = false;
+      el("stop").disabled = true;
+      renderList();
+      renderFilters();
+    }
+    function resetTimer() {
+      running = false;
+      clearInterval(intv);
+      el("t_time").textContent = "00:00:00";
+      el("t_status").textContent = "Timer bereit.";
+      el("start").disabled = false;
+      el("stop").disabled = true;
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Jarvis · Großprojekte</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    main {
+      padding: 12px 14px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h2 {
+      margin: 10px 0 4px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .info {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .card {
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 10px;
+      background: #050505;
+      margin-bottom: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .field-full {
+      grid-column: 1 / span 2;
+    }
+
+    label {
+      font-size: 11px;
+      color: #ccc;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: #080808;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    textarea {
+      min-height: 60px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: #111;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .btn-danger {
+      background: #b00020;
+      color: #fff;
+    }
+
+    .status {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .status-ok {
+      color: #7cf57c;
+    }
+
+    .status-warn {
+      color: #ffd966;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 6px 4px;
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #ccc;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #050505;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .empty {
+      font-size: 12px;
+      color: #777;
+      padding: 6px 0;
+    }
+
+    .pill {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .filter {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter select {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: #080808;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .status-label-open {
+      color: #ffd966;
+    }
+
+    .status-label-running {
+      color: #7cf57c;
+    }
+
+    .status-label-done {
+      color: #66a3ff;
+    }
+
+    @media print {
+
+      header button,
+      .actions button.btn-danger,
+      .filter button {
+        display: none !important;
+      }
+
+      body {
+        background: #fff;
+        color: #000;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>Jarvis · Großprojekte</div>
+    <button class="btn-ghost" onclick="window.close()">Schließen</button>
+  </header>
+  <main>
+
+    <div class="card">
+      <h2>Neues Projekt</h2>
+      <div class="info">Hier trägst du nur große Projekte ein – z. B. 11.000 € Gesamtvolumen mit Anzahlung.</div>
+      <form id="form">
+        <div class="grid">
+          <div class="field">
+            <label>Projektname</label>
+            <input id="name" placeholder="z. B. ACME KI-Rollout 2026">
+          </div>
+          <div class="field">
+            <label>Kunde / Organisation</label>
+            <input id="client" placeholder="z. B. ACME GmbH">
+          </div>
+
+          <div class="field field-full">
+            <label>Kundennummer</label>
+            <input id="custno" placeholder="z. B. KND-1001">
+          </div>
+
+          <div class="field">
+            <label>Gesamtvolumen (€)</label>
+            <input type="number" step="1" min="0" id="total" placeholder="z. B. 11000">
+          </div>
+          <div class="field">
+            <label>Anzahlung (€)</label>
+            <input type="number" step="1" min="0" id="deposit" placeholder="z. B. 3000">
+          </div>
+
+          <div class="field">
+            <label>Startdatum</label>
+            <input type="date" id="start">
+          </div>
+          <div class="field">
+            <label>Enddatum (geplant)</label>
+            <input type="date" id="end">
+          </div>
+
+          <div class="field">
+            <label>Status</label>
+            <select id="statusField">
+              <option value="open">Geplant / Angebot</option>
+              <option value="running">Laufend</option>
+              <option value="done">Abgeschlossen</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Phase / Kategorie</label>
+            <input id="phase" placeholder="z. B. Workshop, Pilot, Rollout…">
+          </div>
+
+          <div class="field field-full">
+            <label>Beschreibung</label>
+            <textarea id="description" placeholder="Kurzbeschreibung, Deliverables, Besonderheiten…"></textarea>
+          </div>
+          <div class="field field-full">
+            <label>Interne Notizen</label>
+            <textarea id="notes" placeholder="Interne Gedanken, Risiken, Zahlungsplan, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn-primary">Projekt speichern</button>
+          <button type="button" class="btn-ghost" onclick="resetForm()">Reset</button>
+          <button type="button" class="btn-danger" onclick="deleteAll()" style="margin-left:auto;">Alle Projekte
+            löschen</button>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Projektübersicht</h2>
+      <div class="controls-row">
+        <div id="summary" class="pill">0 Projekte · 0,00 € Volumen</div>
+        <div class="filter">
+          <select id="filterStatus" onchange="renderList()">
+            <option value="">Status (alle)</option>
+            <option value="open">Geplant/Angebot</option>
+            <option value="running">Laufend</option>
+            <option value="done">Abgeschlossen</option>
+          </select>
+          <select id="filterClient" onchange="renderList()">
+            <option value="">Kunde (alle)</option>
+          </select>
+          <select id="filterCustno" onchange="renderList()">
+            <option value="">Kundennr. (alle)</option>
+          </select>
+          <button class="btn-secondary" onclick="exportProjectsCSV()">CSV Export</button>
+          <button class="btn-secondary" onclick="exportProjectsPDF()">PDF Export</button>
+        </div>
+      </div>
+      <div id="tableWrapper"></div>
+    </div>
+
+  </main>
+
+  <script>
+    function el(id) { return document.getElementById(id); }
+    function money(x) { return (Math.round(Number(x || 0) * 100) / 100).toFixed(2); }
+    function getProjects() {
+      return JSON.parse(localStorage.getItem("bigProjects") || "[]");
+    }
+    function saveProjects(list) {
+      localStorage.setItem("bigProjects", JSON.stringify(list));
+    }
+    function resetForm() {
+      el("form").reset();
+      el("status").textContent = "";
+    }
+    function deleteAll() {
+      if (!confirm("Wirklich alle Projekte löschen?")) return;
+      localStorage.removeItem("bigProjects");
+      renderList();
+      renderFilters();
+    }
+
+    /* Rechnung / Angebot öffnen */
+    function openInvoice(id) {
+      window.open("rechnung.html?p=" + encodeURIComponent(id), "_blank");
+    }
+    function openOffer(id) {
+      window.open("angebot.html?p=" + encodeURIComponent(id), "_blank");
+    }
+
+    /* Filter-Dropdowns */
+    function renderFilters() {
+      const data = getProjects();
+      const clientSel = el("filterClient");
+      const custnoSel = el("filterCustno");
+      const currentClient = clientSel.value;
+      const currentCustno = custnoSel.value;
+
+      const clients = new Set();
+      const custnos = new Set();
+      data.forEach(p => {
+        if (p.client) clients.add(p.client);
+        if (p.custno) custnos.add(p.custno);
+      });
+
+      clientSel.innerHTML = '<option value=\"\">Kunde (alle)</option>';
+      Array.from(clients).sort().forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c; opt.textContent = c;
+        clientSel.appendChild(opt);
+      });
+
+      custnoSel.innerHTML = '<option value=\"\">Kundennr. (alle)</option>';
+      Array.from(custnos).sort().forEach(cn => {
+        const opt = document.createElement("option");
+        opt.value = cn; opt.textContent = cn;
+        custnoSel.appendChild(opt);
+      });
+
+      if (currentClient) clientSel.value = currentClient;
+      if (currentCustno) custnoSel.value = currentCustno;
+    }
+
+    /* Tabelle rendern */
+    function renderList() {
+      const data = getProjects().sort((a, b) => {
+        return (a.created || "").localeCompare(b.created || "");
+      });
+      const statusFilter = el("filterStatus").value;
+      const clientFilter = el("filterClient").value;
+      const custnoFilter = el("filterCustno").value;
+
+      const filtered = data.filter(p => {
+        let ok = true;
+        if (statusFilter && p.status !== statusFilter) ok = false;
+        if (clientFilter && p.client !== clientFilter) ok = false;
+        if (custnoFilter && p.custno !== custnoFilter) ok = false;
+        return ok;
+      });
+
+      let totalVolume = filtered.reduce((s, p) => s + Number(p.total || 0), 0);
+      el("summary").textContent = `${filtered.length} Projekte · ${money(totalVolume)} € Volumen`;
+
+      const wrap = el("tableWrapper");
+      if (filtered.length === 0) {
+        wrap.innerHTML = '<div class="empty">Keine Projekte (oder Filter ohne Treffer).</div>';
+        return;
+      }
+
+      let html = `
+   <table>
+     <thead>
+       <tr>
+         <th>Projekt</th>
+         <th>Kunde</th>
+         <th>Kundennr.</th>
+         <th>Finanzen</th>
+         <th>Zeitraum</th>
+         <th>Status</th>
+         <th></th>
+       </tr>
+     </thead>
+     <tbody>
+ `;
+      filtered.forEach(p => {
+        const rest = (Number(p.total || 0) - Number(p.deposit || 0));
+        const percent = p.total ? (Number(p.deposit || 0) / Number(p.total || 1)) * 100 : 0;
+
+        let statusLabel = p.status || "";
+        let statusClass = "";
+        if (p.status === "open") { statusLabel = "Geplant/Angebot"; statusClass = "status-label-open"; }
+        if (p.status === "running") { statusLabel = "Laufend"; statusClass = "status-label-running"; }
+        if (p.status === "done") { statusLabel = "Abgeschlossen"; statusClass = "status-label-done"; }
+
+        html += `
+     <tr data-id="${p.id}">
+       <td>
+         <b>${p.name || ""}</b><br>
+         <span style="color:#aaa;font-size:11px;">${p.phase || ""}</span><br>
+         <span style="color:#aaa;font-size:11px;">${p.description || ""}</span>
+       </td>
+       <td>${p.client || ""}</td>
+       <td>${p.custno || "-"}</td>
+       <td>
+         Gesamt: <b>${money(p.total || 0)} €</b><br>
+         Anzahlung: ${money(p.deposit || 0)} € (${money(percent)}%)<br>
+         Rest: ${money(rest)} €
+       </td>
+       <td>
+         Start: ${p.start || "-"}<br>
+         Ende: ${p.end || "-"}
+       </td>
+       <td class="${statusClass}">
+         ${statusLabel}<br>
+         <span style="color:#888;font-size:11px;">ID: ${p.id}</span>
+       </td>
+       <td class="right">
+         <button class="btn-secondary" style="font-size:11px;padding:3px 6px;margin-bottom:4px;"
+           onclick="openOffer('${p.id}')">Angebot</button><br>
+         <button class="btn-secondary" style="font-size:11px;padding:3px 6px;margin-bottom:4px;"
+           onclick="openInvoice('${p.id}')">Rechnung</button><br>
+         <button class="btn-ghost" style="font-size:11px;padding:3px 6px;"
+           onclick="deleteSingle('${p.id}')">X</button>
+       </td>
+     </tr>
+   `;
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+    function deleteSingle(id) {
+      const data = getProjects();
+      const idx = data.findIndex(p => p.id === id);
+      if (idx === -1) return;
+      if (!confirm("Dieses Projekt löschen?")) return;
+      data.splice(idx, 1);
+      saveProjects(data);
+      renderList();
+      renderFilters();
+    }
+
+    /* Form submit */
+    el("form").addEventListener("submit", e => {
+      e.preventDefault();
+      const name = el("name").value.trim();
+      const client = el("client").value.trim();
+      const custno = el("custno").value.trim();
+      const total = parseFloat(el("total").value || 0);
+      const deposit = parseFloat(el("deposit").value || 0);
+      const start = el("start").value;
+      const end = el("end").value;
+      const status = el("statusField").value;
+      const phase = el("phase").value.trim();
+      const desc = el("description").value.trim();
+      const notes = el("notes").value.trim();
+
+      if (!name || !client || !total || !isFinite(total)) {
+        el("status").textContent = "Bitte mindestens Projektname, Kunde und Gesamtvolumen angeben.";
+        el("status").className = "status status-warn";
+        return;
+      }
+
+      const list = getProjects();
+      const now = new Date().toISOString();
+      list.push({
+        id: "P" + now + Math.random().toString(16).slice(2, 8),
+        name, client, custno, total, deposit, start, end, status, phase, description: desc, notes,
+        created: now
+      });
+      saveProjects(list);
+      el("status").textContent = "Projekt gespeichert.";
+      el("status").className = "status status-ok";
+      renderList();
+      renderFilters();
+    });
+
+    /* Excel CSV Export */
+    function exportProjectsCSV() {
+      const data = getProjects();
+      if (data.length === 0) { alert("Keine Projekte zum Export."); return; }
+      const sep = ";";
+      const header = [
+        "id", "name", "client", "custno", "total", "deposit", "rest", "deposit_percent",
+        "start", "end", "status", "phase", "description", "notes", "created"
+      ];
+      const esc = v => `"${String(v || "").replace(/"/g, '""')}"`;
+      const lines = [header.join(sep)];
+      data.forEach(p => {
+        const rest = (Number(p.total || 0) - Number(p.deposit || 0));
+        const percent = p.total ? (Number(p.deposit || 0) / Number(p.total || 1)) * 100 : 0;
+        const row = [
+          p.id, p.name, p.client, p.custno || "",
+          p.total || 0, p.deposit || 0, rest, percent.toFixed(2),
+          p.start || "", p.end || "", p.status || "", p.phase || "",
+          p.description || "", p.notes || "", p.created || ""
+        ].map(esc);
+        lines.push(row.join(sep));
+      });
+      const csv = "\uFEFF" + lines.join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = "projekte_excel.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /* PDF Export (Druckdialog) */
+    function exportProjectsPDF() {
+      window.print();
+    }
+
+    /* Init */
+    renderFilters();
+    renderList();
+  </script>
+</body>
+
+</html>

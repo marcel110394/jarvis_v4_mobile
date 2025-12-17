@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Aichmayr Technology · Stundensätze & Zuschläge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root {
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --border:1px solid #d1d5db;
+  --text:#111827;
+  --muted:#6b7280;
+  --radius:12px;
+  --pad:16px;
+}
+
+body {
+  margin:0;
+  background:var(--bg);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  padding:20px;
+  color:var(--text);
+}
+
+h1 {
+  margin-top:0;
+  font-size:20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+button {
+  padding:8px 14px;
+  background:#111;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.card {
+  background:var(--card);
+  padding:var(--pad);
+  border:var(--border);
+  border-radius:var(--radius);
+  max-width:800px;
+  margin:0 auto 20px auto;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:14px;
+}
+
+th, td {
+  border:var(--border);
+  padding:10px;
+  text-align:left;
+}
+
+th {
+  background:#f3f4f6;
+}
+
+.note {
+  font-size:13px;
+  color:var(--muted);
+  margin-top:8px;
+}
+
+/* PRINT VIEW */
+@media print {
+  button { display:none !important; }
+  body { background:#fff; padding:0; }
+  .card { box-shadow:none; border:none; border-radius:0; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>
+    Stundensätze & Zuschläge
+    <button onclick="window.print()">PDF speichern</button>
+  </h1>
+
+  <table>
+    <tr><th>Leistung</th><th>Preis</th></tr>
+
+    <tr><td>Regulärer Stundensatz</td><td><b>€ 150,– / h</b></td></tr>
+
+    <tr><td>Kilometergeld</td><td><b>€ 0,50 / km</b></td></tr>
+
+    <tr><td>Samstag</td><td><b>+50 %</b> (→ € 225,– / h)</td></tr>
+
+    <tr><td>Sonn- & Feiertag</td><td><b>+100 %</b> (→ € 300,– / h)</td></tr>
+
+    <tr><td>Nachtarbeit ab 20:00 Uhr</td><td><b>+30 %</b> (→ € 195,– / h)</td></tr>
+  </table>
+
+  <p class="note">
+    Zuschläge gelten zusätzlich zum regulären Stundensatz und werden automatisch in Angebot & Rechnung berücksichtigt.
+  </p>
+</div>
+
+</body>
+</html>
+

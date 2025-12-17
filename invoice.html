@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aichmayr Technology · Invoice Generator</title>
+<title>Aichmayr Technology </title>
 
 <style>
 :root { --pad: 14px; --border: 1px solid #ccc; --maxw: 980px; }
@@ -50,22 +50,22 @@ code { font-family: ui-monospace; background:#f3f4f6; padding:2px 5px; border-ra
 
   <div class="col-6">
     <label>Issuer (Name / Company)</label>
-    <input id="issuer" placeholder="Marcel Aichmayr · Aichmayr Technology">
+    <input id="issuer" value="Marcel Aichmayr · Aichmayr Technology">
   </div>
 
   <div class="col-6">
     <label>Issuer Address</label>
-    <input id="issuerAddr" placeholder="Street, ZIP, City, Country">
+    <input id="issuerAddr" value="Hammerweg 30, 4050 Traun, Austria">
   </div>
 
   <div class="col-4">
     <label>IBAN</label>
-    <input id="iban" placeholder="AT..">
+    <input id="iban" value="AT89 3400 0000 0619 2504">
   </div>
 
   <div class="col-4">
     <label>BIC (optional)</label>
-    <input id="bic" placeholder="BIC">
+    <input id="bic" value="BIC RZOOAT2L">
   </div>
 
   <div class="col-4">
@@ -75,7 +75,7 @@ code { font-family: ui-monospace; background:#f3f4f6; padding:2px 5px; border-ra
 
   <div class="col-6">
     <label>Contact (E-mail / Phone)</label>
-    <input id="contact" placeholder="mail@domain.com · +43 ...">
+    <input id="contact" value="aichmayr.tech@outlook.com · Phone: +43664 4644439">
   </div>
 
   <div class="col-6">
@@ -328,7 +328,7 @@ function render(){
   const g = calc.data;
   const e = id => document.getElementById(id).value;
 
-  const logo = `<img src="aichmayr-technology-logo.png" style="height:70px; margin-bottom:12px;">`;
+  const logo = `<img src="aichmayr_banner.jpeg" style="height:70px; margin-bottom:12px;">`;
 
   const rows = [...document.querySelectorAll("#items tbody tr")].map(tr=>`
       <tr>
@@ -340,7 +340,7 @@ function render(){
       </tr>`).join("");
 
   const vatText = (g.vat === 0)
-    ? "Small business regulation (Austrian UStG § 6(1)27, annual turnover ≤ 13,000 €) – no VAT charged."
+    ? "Please state the invoice number as payment reference,small business regulation (Austrian UStG § 6(1)27, annual turnover ≤ 13,000 €) – no VAT charged."
     : g.vat + " % VAT";
 
   const clientSlug = slugify(e("client") || e("clientAddr"));
@@ -387,12 +387,6 @@ function render(){
     </table>
 
     <p style="margin-top:20px; white-space:pre-wrap;">${e("notes")}</p>
-
-    <div style="margin-top:16px; font-size:12px; color:#6b7280;">
-      <b>Recommended local save:</b><br>
-      Folder: <code>${folderName}</code><br>
-      Filename: <code>${fileName}</code>
-    </div>
 
     <p style="margin-top:10px; font-size:11px; color:#666;">
       This invoice was generated electronically and is valid without signature.

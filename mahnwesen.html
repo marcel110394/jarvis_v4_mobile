@@ -1,564 +1,332 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
-<meta charset="UTF-8">
-<title>Mahnwesen · Aichmayr Technology</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Jarvis · Mahnwesen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-<style>
-/* 🎨 STILE */
-body{
-  background:#000;
-  color:#fff;
-  font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  padding:18px;
-}
-h1{margin-top:0;}
-.card{
-  background:#111;
-  border:1px solid #222;
-  border-radius:10px;
-  padding:12px;
-  margin-bottom:12px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-td, th{
-  padding:9px 6px;
-  border-bottom:1px solid #222;
-  white-space: nowrap;
-}
-th{
-  color:#aaa;
-  font-size:12px;
-  text-transform:uppercase;
-}
-button{
-  padding:6px 12px;
-  border-radius:8px;
-  border:1px solid #444;
-  background:#fff;
-  color:#000;
-  cursor:pointer;
-  font-weight:600;
-  font-size:12px;
-  white-space: nowrap;
-}
-select, input[type="text"], input[type="number"], input[type="date"]{
-  background:#111;
-  color:#fff;
-  border:1px solid #444;
-  border-radius:8px;
-  padding:6px 10px;
-  box-sizing: border-box;
-}
+    header {
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-/* AMPELFARBEN */
-.overdue{color:#ff6666;font-weight:bold;} /* Rot */
-.warn{color:#ffd966;font-weight:bold;} /* Gelb */
-.green{color:#66ff99;font-weight:bold;} /* Grün */
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-.filterRow{
-  display:flex;
-  gap:10px;
-  margin-bottom:12px;
-  flex-wrap:wrap;
-}
-.dashboard{
-  display:flex;
-  gap:18px;
-  font-size:13px;
-}
-.dashboard b{font-size:15px;}
+    main {
+      padding: 12px 14px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-/* Neue Rechnung hinzufügen Formular */
-#addForm input[type="text"],
-#addForm input[type="number"],
-#addForm input[type="date"] {
-    width: 100%;
-    margin-bottom: 8px;
-}
+    h2 {
+      margin: 6px 0 4px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
 
-/* Layout für schöne Mahn-PDF */
-.reminderDoc{
-  background:#ffffff;
-  color:#000000;
-  padding:24px;
-  border-radius:10px;
-  max-width:800px;
-  margin:0 auto;
-  box-shadow:0 2px 8px rgba(0,0,0,0.4);
-}
-.reminderHeader{
-  display:flex;
-  justify-content:space-between;
-  gap:20px;
-  margin-bottom:16px;
-  font-size:13px;
-}
-.reminderTitle{
-  font-size:20px;
-  font-weight:700;
-}
-.reminderMeta{
-  text-align:right;
-  font-size:12px;
-  color:#444;
-}
-.reminderTable{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:12px;
-  font-size:13px;
-}
-.reminderTable th,
-.reminderTable td{
-  border:1px solid #ddd;
-  padding:6px;
-}
-.reminderTable th{
-  background:#f3f4f6;
-}
-.reminderText{
-  white-space:pre-wrap;
-  margin-top:18px;
-  font-size:13px;
-}
+    .info {
+      font-size: 11px;
+      color: #aaa;
+    }
 
-/* Druckansicht: nur den Mahnbrief schön ausgeben */
-@media print {
-  body{
-    background:#fff;
-    color:#000;
-    padding:0;
-  }
-  /* Alles ausblenden, außer der Mahndokumentation */
-  #dashboard,
-  .filterRow,
-  #list > .card > .buttonsBar,
-  #addInvoiceButton,
-  #emailTextToCopy, /* Wichtig: Textfeld für E-Mail beim Drucken ausblenden */
-  #copyButton,
-  h1{
-    display:none !important;
-  }
-  .reminderDoc{
-    box-shadow:none;
-    border-radius:0;
-    max-width:100%;
-    margin:0;
-  }
-}
-</style>
+    .card {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #050505;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: #080808;
+      color: #fff;
+      padding: 8px;
+      font-size: 13px;
+      resize: vertical;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: #ccc;
+      margin-bottom: 6px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 7px 11px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: #111;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .list {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      max-height: 260px;
+      overflow-y: auto;
+      background: #050505;
+    }
+
+    .entry {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .entry:last-child {
+      border-bottom: none;
+    }
+
+    .entry-main {
+      max-width: 70%;
+    }
+
+    .entry-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .entry-meta {
+      color: #bbb;
+    }
+
+    .pill {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      margin-left: 4px;
+    }
+
+    /* Stufen-Farben */
+    .pill-l1 {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.12);
+      color: #bbf7d0;
+    }
+
+    .pill-l2 {
+      border-color: #facc15;
+      background: rgba(250, 204, 21, 0.12);
+      color: #fef9c3;
+    }
+
+    .fee-note {
+      color: #f97373;
+      font-weight: 600;
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    .empty {
+      font-size: 12px;
+      color: #777;
+      padding: 8px 10px;
+    }
+  </style>
 </head>
 
 <body>
+  <header>
+    <div>Mahnung · Aichmayr OPS</div>
+    <button class="btn-ghost" onclick="location.href='jarvis_v4_darkops_mobile.html'">JARVIS Home</button>
+  </header>
 
-<h1>Mahnwesen</h1>
+  <main>
+    <section class="card">
+      <h2>Letzte erzeugte Mahnung</h2>
+      <div class="info">Von Jarvis erzeugt über Sprachbefehl. Text kann hier angepasst und kopiert werden.</div>
+      <div id="last-meta" class="meta">Keine Mahnung vorhanden.</div>
+      <textarea id="last-letter" placeholder="Noch kein Mahntext vorhanden."></textarea>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="copyLast()">Text kopieren</button>
+        <button class="btn-secondary" onclick="saveEdit()">Änderungen speichern</button>
+      </div>
+    </section>
 
-<div id="dashboard" class="card dashboard"></div>
+    <section>
+      <h2>Alle Mahnungen</h2>
+      <div class="info">Liste aller von Jarvis erzeugten Mahnungen (lokal gespeichert).</div>
+      <div id="list" class="list"></div>
+    </section>
+  </main>
 
-<div class="filterRow">
-  <select id="filter" onchange="render()">
-    <option value="all">Alle</option>
-    <option value="open">Offen</option>
-    <option value="overdue">Überfällig</option>
-    <option value="paid">Bezahlt</option>
-  </select>
-  <button id="addInvoiceButton" onclick="openAddForm()">+ Rechnung hinzufügen</button>
-</div>
-
-<div id="addInvoiceContainer" class="card" style="display:none;">
-    <h3>Neue Rechnung hinzufügen</h3>
-    <form id="addForm" onsubmit="addInvoice(event)">
-        <input type="text" id="newId" placeholder="Rechnungsnummer (z.B. 2025-101)" required>
-        <input type="text" id="newClient" placeholder="Kundenname" required>
-        <input type="text" id="newCustomerNo" placeholder="Kunden-Nr. (optional)">
-        <input type="number" id="newAmount" step="0.01" placeholder="Betrag (z.B. 123.45)" required>
-        <label for="newDue">Fälligkeitsdatum:</label>
-        <input type="date" id="newDue" required>
-        <div style="margin-top:12px; display:flex; gap:8px;">
-          <button type="submit">Speichern</button>
-          <button type="button" onclick="closeAddForm()" style="background:#444; color:#fff;">Abbrechen</button>
-        </div>
-    </form>
-</div>
-
-<div id="list"></div>
-
-<script>
-// =======================================
-// 💾 INVOICE STORAGE
-// =======================================
-function loadInvoices(){
-  return JSON.parse(localStorage.getItem("invoices") || "[]");
-}
-function saveInvoices(list){
-  localStorage.setItem("invoices", JSON.stringify(list));
-}
-function getTodayISO(){
-  return new Date().toISOString().slice(0,10);
-}
-
-// =======================================
-// 📊 DASHBOARD
-// =======================================
-function renderDashboard(){
-  const list = loadInvoices();
-  let overdue = 0, open = 0, paid = 0;
-  const today = getTodayISO();
-
-  list.forEach(inv=>{
-    if(inv.status === "paid") paid += inv.amount;
-    else if(inv.status === "open" && inv.due < today) overdue += inv.amount;
-    else if(inv.status === "open" && inv.due >= today) open += inv.amount;
-  });
-
-  document.getElementById("dashboard").innerHTML = `
-    <div>🔴 Überfällig: <b>${overdue.toFixed(2)} €</b></div>
-    <div>🟡 Offen (noch nicht fällig): <b>${open.toFixed(2)} €</b></div>
-    <div>🟢 Bezahlt: <b>${paid.toFixed(2)} €</b></div>
-  `;
-}
-
-// =======================================
-// 🚦 HELPER: Mahnstatus-Anzeige mit Ampelfarben
-// =======================================
-function renderReminderStatus(inv){
-  if(inv.status === "paid"){
-    return "<span class='green'>Bezahlt</span>";
-  }
-
-  const today = getTodayISO();
-  const isOverdue = inv.due < today;
-  const daysDiffRaw = (new Date(today) - new Date(inv.due)) / (1000*60*60*24);
-  const diff = Math.max(0, Math.floor(daysDiffRaw));
-  const level = inv.reminderLevel || 0;
-
-  if (level === 0) {
-    if (isOverdue) {
-      return `<span class='overdue'>Überfällig (${diff} Tage)</span>`;
-    } else {
-      return `<span class='warn'>Offen</span>`;
+  <script>
+    function getList() {
+      return JSON.parse(localStorage.getItem("dunningList") || "[]");
     }
-  } else if (level === 1) {
-    return `<span class='warn'>1. Mahnung (Überfällig: ${diff} T.)</span>`;
-  } else if (level >= 2) {
-    return `<span class='overdue'>${level}. Mahnung (Überfällig: ${diff} T.)</span>`;
-  }
+    function saveList(list) {
+      localStorage.setItem("dunningList", JSON.stringify(list));
+    }
 
-  return "Status Unbekannt";
-}
+    const lastMetaEl = document.getElementById("last-meta");
+    const lastLetterEl = document.getElementById("last-letter");
+    const listEl = document.getElementById("list");
 
-// =======================================
-// 📄 MAIN LIST RENDER
-// =======================================
-function render(){
-  renderDashboard();
+    let lastId = localStorage.getItem("lastDunningId") || null;
+    let data = getList();
 
-  const list = loadInvoices();
-  const wrap = document.getElementById("list");
-  const today = getTodayISO();
-
-  closeAddForm();
-
-  if(list.length === 0){
-    wrap.innerHTML = "<div class='card'>Keine Rechnungen gespeichert.</div>";
-    return;
-  }
-
-  const mode = document.getElementById("filter").value;
-
-  const filtered = list.filter(inv=>{
-    if(mode === "all") return true;
-    if(mode === "open") return inv.status === "open" && inv.due >= today;
-    if(mode === "overdue") return inv.status === "open" && inv.due < today;
-    if(mode === "paid") return inv.status === "paid";
-  });
-
-  if(filtered.length === 0){
-    wrap.innerHTML = "<div class='card'>Keine Einträge in diesem Filter.</div>";
-    return;
-  }
-
-  let html = `
-  <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>Rechnung</th>
-          <th>Kunde</th>
-          <th>Kunden-Nr.</th>
-          <th>Betrag</th>
-          <th>Fällig</th>
-          <th>Status</th>
-          <th>Aktionen</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  filtered.forEach(inv=>{
-    const daysDiffRaw = (new Date(today) - new Date(inv.due)) / (1000*60*60*24);
-    const diff = Math.max(0, Math.floor(daysDiffRaw));
-
-    html += `
-      <tr>
-        <td>${inv.id}</td>
-        <td>${inv.client}</td>
-        <td>${inv.customerNo || "-"}</td>
-        <td>${inv.amount.toFixed(2)} €</td>
-        <td>${inv.due}</td>
-        <td>
-          ${renderReminderStatus(inv)}
-        </td>
-        <td style="white-space:nowrap;">
-          ${
-            inv.status === "paid"
-            ? ""
-            : `
-              <button onclick="openReminder('${inv.id}')">Mahnung</button>
-              <button onclick="markPaid('${inv.id}')">Bezahlt</button>
-            `
-          }
-          <button onclick="deleteInvoice('${inv.id}')" style="background:#ff6666;color:#fff;border:1px solid #ff0000;">Löschen</button>
-        </td>
-      </tr>
-    `;
-  });
-
-  html += "</tbody></table></div>";
-  wrap.innerHTML = html;
-}
-
-// =======================================
-// ✅ AKTIONEN
-// =======================================
-
-// Rechnung als bezahlt markieren
-function markPaid(id){
-  let list = loadInvoices();
-  let inv = list.find(x => x.id === id);
-  if(!inv) return;
-
-  inv.status = "paid";
-  inv.paidDate = getTodayISO();
-  inv.reminderLevel = 0;
-
-  saveInvoices(list);
-  render();
-}
-
-// Rechnung löschen
-function deleteInvoice(id){
-  if(confirm("Soll die Rechnung Nr. " + id + " wirklich gelöscht werden?")){
-    let list = loadInvoices();
-    const updatedList = list.filter(inv => inv.id !== id);
-
-    saveInvoices(updatedList);
-    render();
-  }
-}
-
-// =======================================
-// ➕ NEUE RECHNUNG HINZUFÜGEN
-// =======================================
-function openAddForm() {
-    document.getElementById("addInvoiceContainer").style.display = 'block';
-    document.getElementById("addInvoiceButton").style.display = 'none';
-    document.getElementById("list").style.display = 'none';
-}
-
-function closeAddForm() {
-    document.getElementById("addInvoiceContainer").style.display = 'none';
-    document.getElementById("addInvoiceButton").style.display = 'inline-block';
-    document.getElementById("list").style.display = 'block';
-}
-
-function addInvoice(event){
-    event.preventDefault();
-
-    const list = loadInvoices();
-    const id = document.getElementById("newId").value.trim();
-    const client = document.getElementById("newClient").value.trim();
-    const customerNo = document.getElementById("newCustomerNo").value.trim();
-    const amount = parseFloat(document.getElementById("newAmount").value);
-    const due = document.getElementById("newDue").value;
-
-    if (list.some(inv => inv.id === id)) {
-        alert("Fehler: Eine Rechnung mit dieser Nummer existiert bereits!");
+    function renderLast() {
+      data = getList();
+      if (!data.length) {
+        lastMetaEl.textContent = "Keine Mahnung vorhanden.";
+        lastLetterEl.value = "";
         return;
+      }
+      let m = data.find(d => d.id === lastId) || data[data.length - 1];
+      if (m) lastId = m.id;
+
+      const level = m.level || 1;
+      const pillClass = level === 1 ? "pill pill-l1" : "pill pill-l2";
+
+      const baseAmount = m.amount || 0;
+      const fee = level >= 2 ? 20 : 0;
+      const displayAmount = (baseAmount + fee).toFixed(2);
+      const feeText = level >= 2
+        ? ' <span class="fee-note">inkl. 20,00 € Bearbeitungsgebühr (Mahnstufe 2)</span>'
+        : '';
+
+      lastMetaEl.innerHTML =
+        `<span class="${pillClass}">Level ${level}</span> · ` +
+        `CLIENT: ${m.client || "UNBEKANNT"} · ` +
+        `INV: ${m.invoice_no || "-"} · ` +
+        `AMOUNT: ${displayAmount} ${m.currency || "EUR"}${feeText} · ` +
+        `DUE: ${m.due_date || "-"} · STATUS: ${m.status || "OFFEN"}`;
+
+      lastLetterEl.value = m.letter || "";
     }
 
-    if (isNaN(amount) || amount <= 0) {
-        alert("Fehler: Bitte geben Sie einen gültigen Betrag ein.");
+    function renderList() {
+      data = getList();
+      if (!data.length) {
+        listEl.innerHTML = '<div class="empty">Noch keine Mahnungen erzeugt.</div>';
         return;
-    }
+      }
+      listEl.innerHTML = "";
+      data
+        .slice()
+        .sort((a, b) => (b.created || "").localeCompare(a.created || ""))
+        .forEach(m => {
+          const div = document.createElement("div");
+          div.className = "entry";
+          div.onclick = () => select(m.id);
 
-    const newInvoice = {
-        id: id,
-        client: client,
-        customerNo: customerNo || null,
-        amount: amount,
-        due: due,
-        status: "open",
-        reminderLevel: 0
-    };
+          const level = m.level || 1;
+          const pillClass = level === 1 ? "pill pill-l1" : "pill pill-l2";
 
-    list.push(newInvoice);
-    saveInvoices(list);
+          const baseAmount = m.amount || 0;
+          const fee = level >= 2 ? 20 : 0;
+          const displayAmount = (baseAmount + fee).toFixed(2);
+          const feeText = level >= 2
+            ? ' <span class="fee-note">+ 20,00 € Bearbeitungsgebühr</span>'
+            : '';
 
-    document.getElementById("addForm").reset();
-    render();
-}
-
-// =======================================
-// 📋 AKTION: E-Mail-Text kopieren
-// =======================================
-function copyEmailText(){
-    const textarea = document.getElementById("emailTextToCopy");
-    // Textarea auswählen (macht den Text markierbar)
-    textarea.select();
-    // Den Text in die Zwischenablage kopieren
-    document.execCommand('copy');
-    alert("Text wurde in die Zwischenablage kopiert. Sie können ihn jetzt in Ihre E-Mail einfügen.");
-}
-
-// =======================================
-// ✉️ MAHNUNG – SCHÖNER BRIEF / PDF + E-MAIL-TEXT
-// =======================================
-function openReminder(id){
-  const list = loadInvoices();
-  const inv  = list.find(x => x.id === id);
-  if (!inv || inv.status === 'paid') return;
-
-  const todayISO = getTodayISO();
-  const dueDate  = inv.due || todayISO;
-
-  const daysDiffRaw = (new Date(todayISO) - new Date(dueDate)) / (1000*60*60*24);
-  const daysDiff    = Math.max(0, Math.floor(daysDiffRaw));
-
-  if (daysDiff === 0) {
-      alert("Diese Rechnung ist noch nicht überfällig und kann daher nicht gemahnt werden.");
-      render();
-      return;
-  }
-
-  // Verzugszinsen und Gebühren berechnen
-  const yearlyRate = 0.0868; // Z.B. 8,68% p.a.
-  const dailyRate  = yearlyRate / 365;
-  const interest   = inv.amount * dailyRate * daysDiff;
-
-  const currentLevel = inv.reminderLevel || 0;
-  const nextLevel    = currentLevel + 1;
-  const feeLevels    = {1:10, 2:20, 3:30, 4:50};
-  const fee          = feeLevels[nextLevel] || 0;
-
-  const total        = inv.amount + interest + fee;
-
-  const custLine = inv.customerNo ? `  Kundennummer: ${inv.customerNo}` : "";
-
-  // 📝 Text, der 1:1 in die E-Mail kopiert wird (ohne HTML)
-  const emailText = `
-Sehr geehrte Damen und Herren,
-
-zu nachstehender Rechnung ist bislang kein Zahlungseingang bei uns eingelangt:
-
-Rechnungsnummer: ${inv.id}
-${custLine ? custLine + '\n' : ''}Betrag: ${inv.amount.toFixed(2)} €
-Fällig am: ${dueDate}
-Die Rechnung ist derzeit seit ${daysDiff} Tagen überfällig.
-
-Wir erlauben uns daher, Verzugszinsen und Mahnspesen zu verrechnen:
-Verzugszinsen (${(yearlyRate*100).toFixed(2)} % p.a., ${daysDiff} Tage): ${interest.toFixed(2)} €
-Mahngebühr (Stufe ${nextLevel}): ${fee.toFixed(2)} €
-
-GESAMT OFFEN: ${total.toFixed(2)} €
-
-Bitte überweisen Sie den Gesamtbetrag in Höhe von ${total.toFixed(2)} € innerhalb von 7 Tagen auf das angegebene Konto.
-Sollten Sie die Zahlung bereits veranlasst haben, betrachten Sie dieses Schreiben bitte als gegenstandslos.
-
-Mit freundlichen Grüßen
-
-Aichmayr Technology
-`.trim();
-
-  document.getElementById("list").innerHTML = `
-    <div class="card">
-      <div class="reminderDoc">
-        <div class="reminderHeader">
-          <div>
-            <div class="reminderTitle">Aichmayr Technology</div>
-            <div style="font-size:12px;color:#555;">Mahnung · Stufe ${nextLevel}</div>
+          div.innerHTML = `
+        <div class="entry-main">
+          <div class="entry-title">
+            ${m.client || "UNBEKANNT"}
+            <span class="${pillClass}">Level ${level}</span>
           </div>
-          <div class="reminderMeta">
-            <div>${todayISO}</div>
-            <div>Rechnungs-Nr.: <b>${inv.id}</b></div>
-            ${inv.customerNo ? `<div>Kundennr.: ${inv.customerNo}</div>` : ""}
-            <div>Kunde: ${inv.client}</div>
-            <div>Fällig am: ${dueDate}</div>
+          <div class="entry-meta">
+            INV: ${m.invoice_no || "-"} · 
+            AMOUNT: ${displayAmount} ${m.currency || "EUR"}${feeText}<br>
+            DUE: ${m.due_date || "-"} · STATUS: ${m.status || "OFFEN"}
           </div>
         </div>
-
-        <table class="reminderTable">
-          <tr>
-            <th>Position</th>
-            <th style="text-align:right;">Betrag</th>
-          </tr>
-          <tr>
-            <td>Offener Rechnungsbetrag</td>
-            <td style="text-align:right;">${inv.amount.toFixed(2)} €</td>
-          </tr>
-          <tr>
-            <td>Verzugszinsen (${(yearlyRate*100).toFixed(2)} % p.a., ${daysDiff} Tage)</td>
-            <td style="text-align:right;">${interest.toFixed(2)} €</td>
-          </tr>
-          <tr>
-            <td>Mahngebühr (Stufe ${nextLevel})</td>
-            <td style="text-align:right;">${fee.toFixed(2)} €</td>
-          </tr>
-          <tr>
-            <td><b>GESAMT OFFEN</b></td>
-            <td style="text-align:right;"><b>${total.toFixed(2)} €</b></td>
-          </tr>
-        </table>
-
-        <h3 style="margin-top:20px; font-size:16px;">Text für E-Mail kopieren:</h3>
-        <textarea id="emailTextToCopy" style="width:100%; height:200px; padding:10px; font-family:monospace; font-size:12px; background:#111; color:#fff; border:1px solid #444; border-radius:8px;">${emailText}</textarea>
-
-        <div class="reminderText" style="margin-top:10px;">
-          *Der obige Text entspricht dem Inhalt der unten stehenden Mahnung.
+        <div style="font-size:11px; color:#aaa;">
+          ${(m.created || "").slice(0, 10)}
         </div>
-      </div>
+      `;
+          listEl.appendChild(div);
+        });
+    }
 
-      <div class="buttonsBar" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-        <button onclick="saveReminder('${id}')">Mahnstufe erhöhen / markieren</button>
-        <button id="copyButton" onclick="copyEmailText()">Text für E-Mail kopieren</button>
-        <button onclick="window.print()">Drucken / PDF</button>
-        <button onclick="render()" style="margin-left:auto;">Zurück</button>
-      </div>
-    </div>
-  `;
-}
+    function select(id) {
+      lastId = id;
+      localStorage.setItem("lastDunningId", id);
+      renderLast();
+      renderList();
+    }
 
-// Mahnstufe erhöhen
-function saveReminder(id){
-  let list = loadInvoices();
-  let inv = list.find(x=>x.id === id);
-  if(!inv) return;
+    function copyLast() {
+      const txt = lastLetterEl.value;
+      if (!txt) return;
+      navigator.clipboard?.writeText(txt).catch(() => { });
+      // Info leicht aktualisieren
+      lastMetaEl.innerHTML = lastMetaEl.innerHTML + ' · <span class="fee-note">Text kopiert</span>';
+    }
 
-  inv.reminderLevel = (inv.reminderLevel || 0) + 1;
-  inv.lastReminder   = getTodayISO();
+    function saveEdit() {
+      if (!lastId) return;
+      data = getList();
+      const idx = data.findIndex(m => m.id === lastId);
+      if (idx === -1) return;
+      data[idx].letter = lastLetterEl.value;
+      saveList(data);
+      lastMetaEl.innerHTML = lastMetaEl.innerHTML + ' · <span class="fee-note">Änderungen gespeichert</span>';
+    }
 
-  saveInvoices(list);
-  render();
-}
-
-// Initialer Aufruf der Liste
-render();
-</script>
-
+    renderList();
+    renderLast();
+  </script>
 </body>
+
 </html>

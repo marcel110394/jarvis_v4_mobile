@@ -1,692 +1,785 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
-<meta charset="UTF-8">
-<title>JARVIS-V4 · OPS-01 · DARKOPS MOBILE</title>
+  <meta charset="UTF-8">
+  <title>JARVIS-V4 · OPS-01 · DARKOPS MOBILE</title>
 
-<!-- Mobile / iPhone App Modus -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Jarvis V4">
-<meta name="theme-color" content="#000000">
-<link rel="apple-touch-icon" jarvis1.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Jarvis V4">
+  <meta name="theme-color" content="#000000">
 
-<style>
-/* ============================================
-   JARVIS V4 — DARKOPS GLOBAL THEME (MOBILE)
-   Commander: AICHMAYR
-   Mode: Black Tactical Interface
-   ============================================ */
+  <style>
+    :root {
+      --color-bg: #000;
+      --color-fg: #fff;
+      --color-dark-element: #0a0a0a;
+      --color-user-element: #111;
+      --color-border-subtle: rgba(255, 255, 255, 0.08);
+      --color-border-light: rgba(255, 255, 255, 0.2);
+      --color-status-online: #00ff77;
+    }
 
-/* GLOBAL */
-html, body {
-  margin:0;
-  padding:0;
-  background:#000;
-  color:#fff;
-  font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  height:100%;
-  overflow:hidden;
-}
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--color-bg);
+      color: var(--color-fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      height: 100%;
+      overflow: hidden;
+    }
 
-/* iOS 100vh Fix */
-@supports (height: 100dvh) {
-  body {
-    height:100dvh;
-  }
-}
+    @supports (height: 100dvh) {
+      body {
+        height: 100dvh;
+      }
+    }
 
-/* SCROLLBAR (STEALTH) */
-::-webkit-scrollbar { width:8px; }
-::-webkit-scrollbar-track { background:#000; }
-::-webkit-scrollbar-thumb { background:#222; border-radius:4px; }
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
 
-/* HEADER — DARKOPS PATCH + OPERATOR INFO */
-header {
-  padding:16px;
-  padding-top: calc(16px + env(safe-area-inset-top));
-  background:#000;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  display:flex;
-  align-items:center;
-  gap:16px;
-  height:72px;
-  box-shadow:0 0 18px rgba(0,0,0,0.85);
-}
+    ::-webkit-scrollbar-track {
+      background: var(--color-bg);
+    }
 
-/* DARKOPS PATCH */
-header img {
-  height:54px;
-  width:54px;
-  border-radius:50%;
-  background:#000;
-  border:2px solid #ffffff;
-  object-fit:cover;
-}
+    ::-webkit-scrollbar-thumb {
+      background: #222;
+      border-radius: 4px;
+    }
 
-/* OPERATOR TEXT */
-header .unitBlock {
-  display:flex;
-  flex-direction:column;
-}
+    header {
+      padding: 16px;
+      padding-top: calc(16px + env(safe-area-inset-top));
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 72px;
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.85);
+    }
 
-header .unitMain {
-  font-size:13px;
-  font-weight:700;
-  letter-spacing:2px;
-  color:#ffffff;
-  text-transform:uppercase;
-}
+    header img {
+      height: 54px;
+      width: 54px;
+      border-radius: 50%;
+      background: var(--color-bg);
+      border: 2px solid var(--color-fg);
+      object-fit: cover;
+    }
 
-header .unitSub {
-  font-size:11px;
-  color:#ccc;
-  letter-spacing:1.2px;
-  margin-top:2px;
-  text-transform:uppercase;
-}
+    header .unitBlock {
+      display: flex;
+      flex-direction: column;
+    }
 
-/* CHAT WINDOW */
-#chat {
-  position:absolute;
-  top: calc(72px + env(safe-area-inset-top));
-  bottom: calc(72px + env(safe-area-inset-bottom));
-  left:0;
-  right:0;
-  overflow-y:auto;
-  padding:16px;
-  background:#000;
-  display:flex;
-  flex-direction:column;
-  scroll-behavior:smooth;
-}
+    header .unitMain {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
 
-/* CHAT BUBBLES */
-.msg {
-  max-width:80%;
-  padding:12px 14px;
-  margin:8px 0;
-  border-radius:12px;
-  font-size:14px;
-  line-height:1.45;
-  border:1px solid rgba(255,255,255,0.1);
-  animation:fade .25s ease;
-}
+    header .unitSub {
+      font-size: 11px;
+      color: #ccc;
+      letter-spacing: 1.2px;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
 
-.msg.jarvis {
-  background:#0a0a0a;
-  color:#e5e5e5;
-}
+    #statusLED {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-status-online);
+      box-shadow: 0 0 5px var(--color-status-online);
+      vertical-align: middle;
+      margin-left: 8px;
+    }
 
-.msg.user {
-  margin-left:auto;
-  background:#111;
-  color:#fff;
-  border:1px solid rgba(255,255,255,0.05);
-}
+    /* OPS-NAVIGATION */
+    .ops-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #050505;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      height: 40px;
+      box-sizing: border-box;
+    }
 
-@keyframes fade {
-  from { opacity:0; transform:translateY(8px); }
-  to   { opacity:1; transform:translateY(0); }
-}
+    .ops-nav-btn {
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #101010;
+      color: #f5f5f5;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      white-space: nowrap;
+    }
 
-/* INPUT BAR */
-#inputBox {
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  padding:12px;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  background:#000;
-  border-top:1px solid rgba(255,255,255,0.05);
-  display:flex;
-  gap:8px;
-}
+    .ops-nav-btn:hover {
+      background: #1a1a1a;
+    }
 
-input {
-  flex:1;
-  padding:10px 12px;
-  background:#0d0d0d;
-  border:1px solid rgba(255,255,255,0.2);
-  color:#fff;
-  border-radius:10px;
-  font-size:15px;
-}
+    #chat {
+      position: absolute;
+      top: calc(72px + 40px + env(safe-area-inset-top));
+      bottom: calc(72px + env(safe-area-inset-bottom));
+      left: 0;
+      right: 0;
+      overflow-y: auto;
+      padding: 16px;
+      background: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      scroll-behavior: smooth;
+    }
 
-/* Mobile Button etwas größer */
-button {
-  padding:10px 16px;
-  background:#fff;
-  color:#000;
-  border:none;
-  font-weight:700;
-  border-radius:10px;
-  cursor:pointer;
-  letter-spacing:0.5px;
-  text-transform:uppercase;
-  font-size:13px;
-}
+    .msg {
+      max-width: 80%;
+      padding: 12px 14px;
+      margin: 8px 0;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: fade .25s ease;
+    }
 
-/* TYPING INDICATOR */
-#typing {
-  position:absolute;
-  bottom: calc(58px + env(safe-area-inset-bottom));
-  left:18px;
-  font-size:12px;
-  color:#777;
-  opacity:0.7;
-  display:none;
-}
+    .msg.jarvis {
+      background: var(--color-dark-element);
+      color: #e5e5e5;
+    }
 
-/* BOOT ANIMATION (optional) */
-@keyframes bootGlow {
-  0% { opacity:0; letter-spacing:-2px; }
-  100% { opacity:1; letter-spacing:2px; }
-}
+    .msg.user {
+      margin-left: auto;
+      background: var(--color-user-element);
+      color: var(--color-fg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
 
-.bootScreen {
-  position:absolute;
-  inset:0;
-  background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:18px;
-  font-weight:700;
-  animation:bootGlow 1s ease forwards;
-  z-index:999;
-  text-align:center;
-  padding:0 20px;
-}
-</style>
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #inputBox {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      background: var(--color-bg);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      gap: 8px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px 12px;
+      background: var(--color-dark-element);
+      border: 1px solid var(--color-border-light);
+      color: var(--color-fg);
+      border-radius: 10px;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 10px 16px;
+      background: var(--color-fg);
+      color: var(--color-bg);
+      border: none;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+
+    #typing {
+      position: absolute;
+      bottom: calc(58px + env(safe-area-inset-bottom));
+      left: 18px;
+      font-size: 12px;
+      color: #777;
+      opacity: 0.7;
+      display: none;
+    }
+
+    @keyframes bootGlow {
+      0% {
+        opacity: 0;
+        letter-spacing: -2px;
+      }
+
+      100% {
+        opacity: 1;
+        letter-spacing: 2px;
+      }
+    }
+
+    .bootScreen {
+      position: absolute;
+      inset: 0;
+      background: var(--color-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-fg);
+      font-size: 18px;
+      font-weight: 700;
+      animation: bootGlow 1s ease forwards;
+      z-index: 999;
+      text-align: center;
+      padding: 0 20px;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- BOOTSCREEN -->
-<div id="boot" class="bootScreen">
-  JARVIS V4 · DARKOPS MOBILE<br>
-  INITIALIZING OPS-01 CHANNEL
-</div>
-
-<header>
-  <!-- DarkOps Patch -->
-  <img src="/mnt/data/A_digital_vector_image_presents_a_circular_logo_wi.png" alt="Aichmayr Patch">
-
-  <div class="unitBlock">
-    <div class="unitMain">UNIT: JARVIS-V4 · CHANNEL: OPS-01</div>
-    <div class="unitSub">Commander: Aichmayr</div>
+  <div id="boot" class="bootScreen">
+    JARVIS V4 · DARKOPS MOBILE<br>
+    INITIALIZING OPS-01 CHANNEL
   </div>
-</header>
 
-<div id="chat"></div>
-<div id="typing">UNIT JARVIS-V4: Processing…</div>
+  <header>
+    <img src="/mnt/data/A_digital_vector_image_presents_a_circular_logo_wi.png" alt="Aichmayr Patch">
+    <div class="unitBlock">
+      <div class="unitMain">UNIT: JARVIS-V4 · CHANNEL: OPS-01</div>
+      <div class="unitSub">Commander: Aichmayr <span id="statusLED"></span></div>
+    </div>
+  </header>
 
-<div id="inputBox">
-  <input id="input" placeholder="Awaiting next directive, Commander…">
-  <button onclick="send()">Send</button>
-</div>
+  <nav class="ops-nav">
+    <button class="ops-nav-btn" onclick="location.href='dashboard.html'">Dashboard</button>
+    <button class="ops-nav-btn" onclick="location.href='jarvis_v4_darkops_mobile.html'">Jarvis</button>
+    <button class="ops-nav-btn" onclick="location.href='angebot.html'">Angebote</button>
+    <button class="ops-nav-btn" onclick="location.href='rechnung.html'">Rechnungen</button>
+    <button class="ops-nav-btn" onclick="location.href='mahnwesen.html'">Mahnwesen</button>
+    <button class="ops-nav-btn" onclick="location.href='kundenanlegen.html'">Kunden</button>
+    <button class="ops-nav-btn" onclick="location.href='umsatz.html'">Umsatz</button>
+    <button class="ops-nav-btn" onclick="location.href='spesen.html'">Spesen</button>
+    <button class="ops-nav-btn" onclick="location.href='lagerbestand.html'">Lager</button>
+    <button class="ops-nav-btn" onclick="location.href='termine.html'">Termine</button>
+    <button class="ops-nav-btn" onclick="location.href='zeiterfassung.html'">Zeit</button>
+    <button class="ops-nav-btn" onclick="location.href='commands.html'">Befehle</button>
+  </nav>
 
-<script>
-/* ==========================================================
-   JARVIS V4 — DARKOPS CORE ENGINE (MOBILE)
-   Messaging · Parser · Memory · Tactical Responses
-   ========================================================== */
 
-const chat = document.getElementById("chat");
-const input = document.getElementById("input");
-const typing = document.getElementById("typing");
-const bootScreen = document.getElementById("boot");
+  <div id="chat"></div>
+  <div id="typing">UNIT JARVIS-V4: Processing…</div>
 
-/* Bootscreen ausblenden */
-setTimeout(() => {
-  if (bootScreen) bootScreen.style.display = "none";
-}, 1100);
+  <div id="inputBox">
+    <input id="input" placeholder="Awaiting next directive, Commander…">
+    <button onclick="send()">Send</button>
+  </div>
 
-/* Basic double-tap zoom prevention (iOS) */
-let lastTouchEnd = 0;
-document.addEventListener('touchend', function (event) {
-  const now = Date.now();
-  if (now - lastTouchEnd <= 300) {
-    event.preventDefault();
-  }
-  lastTouchEnd = now;
-}, false);
+  <script>
+    /* ==========================================================
+       JARVIS V4.2 — KI-CORE ENGINE (MOBILE)
+       ========================================================== */
 
-/* ========== OUTPUT ========= */
-function log(msg, sender="jarvis") {
-  const div = document.createElement("div");
-  div.className = "msg " + sender;
-  div.innerHTML = msg.replace(/\n/g, "<br>");
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const typing = document.getElementById("typing");
+    const bootScreen = document.getElementById("boot");
 
-/* ========== JARVIS OPS-RESPONSE ========== */
-function ops(msg, delay=400) {
-  typing.style.display = "block";
-  setTimeout(()=>{
-    typing.style.display = "none";
-    log(msg, "jarvis");
-  }, delay);
-}
+    /* Bootscreen ausblenden & Double-Tap-Zoom verhindern */
+    setTimeout(() => {
+      if (bootScreen) bootScreen.style.display = "none";
+    }, 1100);
 
-/* ========== SEND ========== */
-function send() {
-  const txt = input.value.trim();
-  if(!txt) return;
+    let lastTouchEnd = 0;
 
-  log(txt, "user");
-  input.value = "";
-  parse(txt.toLowerCase());
-}
+    document.addEventListener("touchend", (event) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
 
-/* ENTER auf Mobile/Keyboard */
-input.addEventListener("keydown", (e)=>{
-  if(e.key === "Enter") {
-    e.preventDefault();
-    send();
-  }
-});
-
-/* ==========================================================
-   MEMORY ENGINE
-   ========================================================== */
-let mem = {
-  lastClient: null,
-  lastHours: null,
-  lastRate: 140,
-  lastProject: null,
-  lastCommand: null
-};
-
-/* ==========================================================
-   HELPER: SEITENÖFFNUNG
-   ========================================================== */
-function openModule(file){
-  // immer im selben Tab
-  window.location.href = file;
-}
-
-/* ==========================================================
-   PARSER ENGINE — DARKOPS MODE
-   ========================================================== */
-function parse(cmd) {
-
-  mem.lastCommand = cmd;
-
-  /* --- HELP --- */
-  if (cmd === "help" || cmd === "hilfe" || cmd === "?" || cmd === "commands") {
-    ops(
-`AVAILABLE COMMANDS:
-- rechnung → opens rechnung.html
-- angebot → opens angebot.html
-- projekt / großprojekt → opens projekt.html
-- kunden / kundenmodul → opens kundenanlegen.html
-- lager / lagerbestand → opens lagerbestand.html
-- spesen / reisekosten → opens spesen.html
-- mahnung / mahnwesen → opens mahnwesen.html
-- zeit / zeiterfassung / time track → opens zeit.html
-- kalender / termine → opens termine.html
-- umsatz / dashboard → opens umsatz.html
-- suche / search → opens search.html
-- launcher / home / start → opens index.html
-- termin DD.MM.YYYY HH:MM Titel → create appointment
-- umsatz 1200 für kundeX → add revenue
-- kunde NAME → create client in DB`
-    );
-    return;
-  }
-
-  /* --- Greeting --- */
-  if(cmd.includes("hallo") || cmd.includes("hi") || cmd.includes("servus")) {
-    ops("UNIT JARVIS-V4 ONLINE.\nAwaiting next directive, Commander AICHMAYR.");
-    return;
-  }
-
-  /* --- LAUNCHER / HOME --- */
-  if (cmd.includes("launcher") || cmd === "home" || cmd === "start" || cmd.includes("hauptmenü")) {
-    ops("Opening main launcher…");
-    setTimeout(() => openModule("index.html"), 400);
-    return;
-  }
-
-  /* --- Rechnung öffnen --- */
-  if(cmd.includes("rechnung")) {
-    ops("Opening invoice module…");
-    setTimeout(() => openModule("rechnung.html"), 400);
-    return;
-  }
-
-  /* --- Angebot öffnen --- */
-  if(cmd.includes("angebot")) {
-    ops("Opening offer module…");
-    setTimeout(() => openModule("angebot.html"), 400);
-    return;
-  }
-
-  /* --- Projekt / Großprojekt --- */
-  if (cmd.includes("projekt") || cmd.includes("großprojekt")) {
-    ops("Opening project module…");
-    setTimeout(() => openModule("projekt.html"), 400);
-    return;
-  }
-
-  /* --- Kundenmodul öffnen --- */
-  if (cmd === "kunden" ||
-      cmd.includes("kundenmodul") ||
-      cmd.includes("kunden modul") ||
-      cmd.includes("kundenübersicht")) {
-    ops("Opening client module…");
-    setTimeout(() => openModule("kundenanlegen.html"), 400);
-    return;
-  }
-
-  /* --- Lager / Lagerbestand --- */
-  if (cmd.includes("lager") || cmd.includes("lagerbestand")) {
-    ops("Opening inventory module…");
-    setTimeout(() => openModule("lagerbestand.html"), 400);
-    return;
-  }
-
-  /* --- Spesen / Reisekosten --- */
-  if (cmd.includes("spesen") || cmd.includes("reisekosten")) {
-    ops("Opening expense module…");
-    setTimeout(() => openModule("spesen.html"), 400);
-    return;
-  }
-
-  /* --- Mahnwesen --- */
-  if (cmd.includes("mahnung") || cmd.includes("mahnwesen")) {
-    ops("Opening dunning module…");
-    setTimeout(() => openModule("mahnwesen.html"), 400);
-    return;
-  }
-
-  /* --- Zeiterfassung / Time Track --- */
-  if (cmd.includes("zeiterfassung") ||
-      cmd.includes("time track") ||
-      cmd === "zeit" ||
-      cmd.includes("stundenerfassung")) {
-    ops("Opening time tracking module…");
-    setTimeout(() => openModule("zeit.html"), 400);
-    return;
-  }
-
-  /* --- Kalender öffnen --- */
-  if (cmd.includes("kalender") || cmd.includes("termine anzeigen") || (cmd.includes("termin") && !cmd.startsWith("termin "))) {
-    ops("UNIT: JARVIS-V4 — Opening calendar module.");
-    setTimeout(() => openModule("termine.html"), 400);
-    return;
-  }
-
-  /* --- Termin anlegen aus Text ---
-     Pattern: 'Termin 21.11.2025 14:00 Meeting mit Kunde X' */
-  if (cmd.startsWith("termin ")) {
-    const m = cmd.match(/termin\s+(\d{1,2}\.\d{1,2}\.\d{4})\s+(\d{1,2}:\d{2})\s+(.+)/i);
-    if (!m) {
-      ops("PATTERN: 'Termin 21.11.2025 14:00 Meeting mit Kunde X'");
-      return;
+    /* ---------- UI-Helfer ---------- */
+    function log(msg, sender = "jarvis") {
+      if (!msg || !msg.trim()) return;
+      const div = document.createElement("div");
+      div.className = "msg " + sender;
+      div.innerHTML = msg.replace(/\n/g, "<br>");
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
     }
-    const dateStr = m[1];   // dd.mm.yyyy
-    const timeStr = m[2];   // hh:mm
-    const titleStr = m[3];  // Rest als Titel
 
-    const parts = dateStr.split(".");
-    const isoDate = parts[2] + "-" + parts[1].padStart(2,"0") + "-" + parts[0].padStart(2,"0");
-
-    addAppointmentFromJarvis(isoDate, timeStr, titleStr);
-    return;
-  }
-
-  /* --- Umsatz-Dashboard öffnen --- */
-  if(cmd.includes("umsatz") || cmd.includes("revenue") || cmd.includes("dashboard")) {
-    // Wenn nur Status gefragt → Status + optionales Öffnen
-    if (cmd.includes("status")) {
-      let data = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
-      let sum  = data.reduce((s,x)=>s + Number(x.amount||0), 0);
-      ops(`REVENUE STATUS:\nTOTAL: € ${sum.toFixed(2)}\nOpening dashboard…`);
-    } else {
-      ops("Opening revenue dashboard…");
+    function ops(msg, delay = 400) {
+      typing.style.display = "block";
+      setTimeout(() => {
+        typing.style.display = "none";
+        log(msg, "jarvis");
+      }, delay);
     }
-    setTimeout(() => openModule("umsatz.html"), 400);
-    return;
-  }
 
-  /* --- SEARCH / SUCHE --- */
-  if (cmd.includes("search") || cmd.includes("suche") || cmd.includes("finden")) {
-    ops("Opening search module…");
-    setTimeout(() => openModule("search.html"), 400);
-    return;
-  }
-
-  /* --- Auftrag / Task / Stunden (öffnet Angebot) --- */
-  if(cmd.includes("auftrag") || cmd.includes("task") || cmd.includes("stunden")) {
-
-    let hoursMatch = cmd.match(/\d+/);
-    if(hoursMatch) mem.lastHours = parseInt(hoursMatch[0]);
-
-    ops(
-`UNIT: JARVIS-V4
-TASK DETECTED
-HOURS: ${mem.lastHours || "NOT SPECIFIED"}
-RATE: ${mem.lastRate} €/h
-STATUS: OPENING OFFER MODULE`
-    );
-
-    setTimeout(() => openModule("angebot.html"), 600);
-    return;
-  }
-
-  /* --- Kunden in DB anlegen via 'kunde NAME' --- */
-  if(cmd.startsWith("kunde ")) {
-    let name = cmd.replace("kunde","").trim();
-    if(!name){ ops("Specify client name."); return; }
-
-    let db = JSON.parse(localStorage.getItem("db_clients") || "[]");
-    let id = "C" + Math.floor(Math.random()*99999);
-
-    db.push({ id, name, address:"", email:"", phone:"", umsatz:0 });
-    localStorage.setItem("db_clients", JSON.stringify(db));
-
-    mem.lastClient = name;
-
-    ops(
-`UNIT: JARVIS-V4
-CLIENT REGISTERED
-TARGET: ${name}
-ID: ${id}`
-    );
-    return;
-  }
-
-  /* --- auch englisches 'new client NAME' --- */
-  if(cmd.startsWith("new client")) {
-    let name = cmd.replace("new client","").trim();
-    if(!name){ ops("Specify client name."); return; }
-
-    let db = JSON.parse(localStorage.getItem("db_clients") || "[]");
-    let id = "C" + Math.floor(Math.random()*99999);
-
-    db.push({ id, name, address:"", email:"", phone:"", umsatz:0 });
-    localStorage.setItem("db_clients", JSON.stringify(db));
-
-    mem.lastClient = name;
-
-    ops(
-`UNIT: JARVIS-V4
-CLIENT REGISTERED
-TARGET: ${name}
-ID: ${id}`
-    );
-    return;
-  }
-
-  /* --- Umsatz hinzufügen (z.B. 'umsatz 1200 für acme') --- */
-  if(cmd.startsWith("umsatz ")) {
-    const numMatch = cmd.match(/umsatz\s+(\d+(\.\d+)?)/);
-    let amount = numMatch ? Number(numMatch[1]) : null;
-    let parts = cmd.split("für");
-    let client = parts[1] ? parts[1].trim() : (mem.lastClient || "UNKNOWN");
-
-    if(amount) {
-      addRevenue(amount, client, "OPS");
-    } else {
-      ops("NO VALID AMOUNT DETECTED.");
+    function openModule(file) {
+      window.location.href = file;
     }
-    return;
-  }
 
-  /* --- CSV Export der Umsätze --- */
-  if(cmd.includes("export") && cmd.includes("csv")) {
-    exportCSV();
-    return;
-  }
+    /* ---------- MEMORY / BACKOFFICE ---------- */
+    let mem = {
+      lastClient: localStorage.getItem("lastClient") || null,
+      lastRate: Number(localStorage.getItem("lastRate")) || 140,
+      lastProject: localStorage.getItem("lastProject") || "UNSPECIFIED",
+      lastCommand: null
+    };
 
-  /* --- Fallback --- */
-  ops("COMMAND NOT RECOGNIZED.\nType 'help' for available commands.");
-}
+    function updateMem(key, value) {
+      if (value !== undefined && value !== null) {
+        mem[key] = value;
+        localStorage.setItem(key, value);
+      }
+    }
 
-/* =============================================================================
-   BACKOFFICE ENGINE — Umsatztracking · CSV-Backup · Client-DB · Mission Logs
-   ============================================================================= */
+    function logMission(event, detail = "") {
+      let logs = JSON.parse(localStorage.getItem("missionLogs") || "[]");
+      logs.push({ event, detail, time: new Date().toISOString() });
+      localStorage.setItem("missionLogs", JSON.stringify(logs));
+    }
 
-/* ==========================================================
-   UMSATZ-TRACKING SYSTEM
-   ========================================================== */
-function addRevenue(amount, client="UNKNOWN", project="OPS") {
-  let list = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+    function addRevenue(amount, client = "UNKNOWN", project = "OPS") {
+      let list = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+      list.push({
+        amount: Number(amount),
+        client,
+        project,
+        date: new Date().toISOString()
+      });
+      localStorage.setItem("umsatzListe", JSON.stringify(list));
+      logMission("REVENUE_ADDED", `€ ${Number(amount).toFixed(2)} for ${client} · PROJECT: ${project}`);
+      updateMem("lastClient", client);
 
-  list.push({
-    amount: Number(amount),
-    client: client,
-    project: project,
-    date: new Date().toISOString()
-  });
-
-  localStorage.setItem("umsatzListe", JSON.stringify(list));
-
-  ops(
-`REVENUE REGISTERED
+      ops(
+        `REVENUE REGISTERED
 CLIENT: ${client}
 PROJECT: ${project}
 AMOUNT: € ${Number(amount).toFixed(2)}`
-  );
-}
+      );
+    }
 
-/* ==========================================================
-   CSV BACKUP EXPORT
-   ========================================================== */
-function exportCSV() {
-  let data = JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+    function addTimeEntry(hours, project, rate, description) {
+      hours = Number(hours) || 0;
+      rate = Number(rate) || mem.lastRate || 140;
+      project = project || mem.lastProject || "UNSPECIFIED";
+      const amount = hours * rate;
+      const date = new Date().toISOString().slice(0, 10);
 
-  if(data.length === 0) {
-    ops("NO DATA AVAILABLE FOR EXPORT.");
-    return;
-  }
+      let list = JSON.parse(localStorage.getItem("timeEntries") || "[]");
+      list.push({
+        id: "T" + Date.now(),
+        date,
+        project,
+        hours,
+        rate,
+        amount,
+        description: description || "KI-Buchung",
+        notes: "",
+        created: new Date().toISOString()
+      });
+      localStorage.setItem("timeEntries", JSON.stringify(list));
 
-  let header = "amount,client,project,date\n";
-  let rows = data.map(r =>
-    `${r.amount},${r.client},${r.project},${r.date}`
-  ).join("\n");
+      updateMem("lastRate", rate);
+      updateMem("lastProject", project);
 
-  let csv = header + rows;
-  let blob = new Blob([csv], {type:"text/csv"});
-  let a = document.createElement("a");
+      logMission(
+        "TIME_ENTRY_ADDED",
+        `DATE: ${date} · PROJECT: ${project} · HOURS: ${hours.toFixed(2)} · RATE: €${rate.toFixed(2)} · AMOUNT: €${amount.toFixed(2)}`
+      );
 
-  a.href = URL.createObjectURL(blob);
-  a.download = "jarvis_umsatz_backup.csv";
-  a.click();
-
-  ops("CSV EXPORT COMPLETE.");
-}
-
-/* ==========================================================
-   CLIENT DATABASE SUPPORT
-   ========================================================== */
-function getClients() {
-  return JSON.parse(localStorage.getItem("db_clients") || "[]");
-}
-
-function findClient(name) {
-  let db = getClients();
-  return db.find(c => c.name.toLowerCase() === name.toLowerCase());
-}
-
-function updateClient(name, field, value) {
-  let db = getClients();
-  let c = db.find(x => x.name.toLowerCase() === name.toLowerCase());
-
-  if(!c) {
-    ops("CLIENT NOT FOUND.");
-    return;
-  }
-
-  c[field] = value;
-  localStorage.setItem("db_clients", JSON.stringify(db));
-
-  ops(`CLIENT UPDATED:\n${name}\n${field} → ${value}`);
-}
-
-/* ==========================================================
-   APPOINTMENTS SUPPORT (aus Jarvis-Befehlen)
-   ========================================================== */
-function addAppointmentFromJarvis(date, time, title) {
-  let list = JSON.parse(localStorage.getItem("appointments") || "[]");
-  list.push({
-    date: date,
-    time: time,
-    title: title,
-    location: "",
-    notes: "Aus Jarvis-Befehl erstellt."
-  });
-  localStorage.setItem("appointments", JSON.stringify(list));
-
-  ops(
-`APPOINTMENT REGISTERED
+      ops(
+        `TIME ENTRY REGISTERED
 DATE: ${date}
-TIME: ${time}
-TITLE: ${title}`
-  );
-}
+PROJECT: ${project}
+HOURS: ${hours.toFixed(2)}
+RATE: € ${rate.toFixed(2)}
+AMOUNT: € ${amount.toFixed(2)}`
+      );
+    }
 
-/* ==========================================================
-   MISSION LOGS (Simple Event Logger)
-   ========================================================== */
-function logMission(event, detail="") {
-  let logs = JSON.parse(localStorage.getItem("missionLogs") || "[]");
+    /* ---------- EXECUTION ENGINE (KI-Ausführung) ---------- */
+    function executeAction(data) {
+      // Debug-Ausgabe im Chat – zeigt dir immer, was vom Backend kommt
+      log("DEBUG: " + JSON.stringify(data), "jarvis");
 
-  logs.push({
-    event,
-    detail,
-    time: new Date().toISOString()
-  });
+      const intent = data.intent || "fallback_command";
+      const params = data.params || {};
 
-  localStorage.setItem("missionLogs", JSON.stringify(logs));
+      logMission("KI_INTENT_RECEIVED", `Intent: ${intent}, Params: ${JSON.stringify(params)}`);
 
-  ops(`MISSION LOGGED: ${event}`);
-}
+      switch (intent) {
+        case "open_module":
+          // Übergabe von Daten an das Kundenanlege-Modul
+          if (params.preload_name) localStorage.setItem("tempClientName", params.preload_name);
+          if (params.preload_customerNo) localStorage.setItem("tempCustomerNo", params.preload_customerNo);
+          if (params.preload_address) localStorage.setItem("tempAddress", params.preload_address);
+          if (params.preload_zip) localStorage.setItem("tempZip", params.preload_zip);
+          if (params.preload_city) localStorage.setItem("tempCity", params.preload_city);
 
-/* ==========================================================
-   INITIAL BOOT MESSAGE
-   ========================================================== */
-ops(
-`UNIT: JARVIS-V4
-CHANNEL: OPS-01
+          // Ansprechpartner + E-Mail + Telefon weiterreichen
+          if (params.preload_contact) localStorage.setItem("tempContact", params.preload_contact);
+          if (params.preload_email) localStorage.setItem("tempEmail", params.preload_email);
+          if (params.preload_phone) localStorage.setItem("tempPhone", params.preload_phone);
+
+          ops(`Opening module: ${params.module}...`);
+          setTimeout(() => {
+            if (params.module) openModule(params.module);
+          }, 400);
+          break;
+
+        case "open_big_projects":
+          logMission("OPEN_BIG_PROJECTS", "grossprojekte.html");
+          ops("Opening BIG PROJECTS board…");
+          setTimeout(() => {
+            openModule("grossprojekte.html");
+          }, 400);
+          break;
+
+        case "scan_item":
+          localStorage.setItem("inventoryScanMode", "1");
+          logMission("SCAN_ITEM", "Scan mode activated, opening lagerbestand.html");
+          ops("SCAN-MODUS AKTIVIERT<br>Öffne Lagerbestand – bitte Barcode jetzt mit Scanner einlesen.");
+          setTimeout(() => {
+            openModule("lagerbestand.html");
+          }, 400);
+          break;
+
+        case "add_revenue":
+          if (params.amount) {
+            const amount = Number(params.amount);
+            const client = params.client || mem.lastClient || "UNKNOWN";
+            const project = params.project || params.project_id || "KI_OPS";
+            addRevenue(amount, client, project);
+            updateMem("lastClient", client);
+          } else {
+            ops("KI CORE: Betrag fehlt für Umsatzregistrierung. Bitte Betrag angeben.");
+          }
+          break;
+
+        case "add_time_entry":
+          if (!params.hours) {
+            ops("KI CORE: Stundenangabe fehlt. Bitte Stunden angeben.");
+          } else {
+            const project = params.project || params.project_id || mem.lastProject || "UNSPECIFIED";
+            addTimeEntry(params.hours, project, params.rate, params.description);
+          }
+          break;
+
+        case "create_appointment": {
+          const appts = JSON.parse(localStorage.getItem("appointments") || "[]");
+          const appt = {
+            date: params.date || "",
+            time: params.time || "",
+            title: params.title || "Termin",
+            location: params.location || "",
+            notes: params.notes || ""
+          };
+          appts.push(appt);
+          localStorage.setItem("appointments", JSON.stringify(appts));
+
+          logMission(
+            "APPOINTMENT_CREATED",
+            `TITLE: ${appt.title} · DATE: ${appt.date} ${appt.time} · LOCATION: ${appt.location}`
+          );
+
+          ops(
+            `APPOINTMENT REGISTERED<br>` +
+            `TITLE: ${appt.title}<br>` +
+            `DATE/TIME: ${appt.date} ${appt.time}`
+          );
+          break;
+        }
+
+        case "create_dunning": {
+          const id = "D" + Date.now();
+          const now = new Date().toISOString();
+
+          const mah = {
+            id,
+            created: now,
+            level: params.level || 1,
+            client: params.client || "UNBEKANNT",
+            invoice_no: params.invoice_no || "",
+            amount: Number(params.amount || 0),
+            currency: params.currency || "EUR",
+            due_date: params.due_date || "",
+            days_overdue: params.days_overdue ?? null,
+            letter: params.letter || "",
+            status: "OFFEN"
+          };
+
+          let list = JSON.parse(localStorage.getItem("dunningList") || "[]");
+          list.push(mah);
+          localStorage.setItem("dunningList", JSON.stringify(list));
+
+          localStorage.setItem("lastDunningId", id);
+
+          logMission(
+            "DUNNING_CREATED",
+            `CLIENT: ${mah.client} · INVOICE: ${mah.invoice_no || "-"} · LEVEL: ${mah.level} · AMOUNT: ${mah.amount.toFixed(2)} ${mah.currency}`
+          );
+
+          ops(
+            `DUNNING GENERATED
+CLIENT: ${mah.client}
+INVOICE: ${mah.invoice_no || "-"}
+LEVEL: ${mah.level}
+AMOUNT: ${mah.amount.toFixed(2)} ${mah.currency}`
+          );
+
+          setTimeout(() => {
+            openModule("mahnwesen.html");
+          }, 400);
+
+          break;
+        }
+
+        case "greeting":
+          ops("UNIT JARVIS-V4 ONLINE.\nAwaiting next directive, Commander AICHMAYR.");
+          break;
+
+        case "help":
+        case "fallback_command":
+          ops(`COMMAND NOT RECOGNIZED BY KI CORE. Possible commands:
+- Lege Kunde Trafik Steinweg KDN 4711 4050 Traun an
+- Umsatz 1500 für Tesla
+- Termin 21.11.2025 14:00 Meeting mit Kunde X
+- Buche 2 Stunden für ACME zum Satz 140
+- Scanne (Lager-Scan-Modus starten)
+- Öffne Lager / Rechnungen / Spesen / Dashboard / Zeit / Termine / Großprojekte / Logs / Befehle`);
+          break;
+
+        default:
+          ops(`UNIT: JARVIS-V4. UNKNOWN INTENT received: ${intent}`);
+      }
+    }
+
+    /* ---------- Fallback-Parser ---------- */
+    function simulateKI(txt) {
+      const lowerTxt = txt.toLowerCase().trim();
+
+      // 1) Mahnung erkennen
+      if (lowerTxt.includes("mahnung")) {
+        const amountMatch = txt.match(/(\d+[.,]?\d*)\s*(euro|€)/i);
+        const amount = amountMatch ? Number(amountMatch[1].replace(",", ".")) : null;
+
+        const invMatch = txt.match(/re[-\s]?\d{4}[-\/]?\d+/i);
+        const invoice_no = invMatch ? invMatch[0].toUpperCase() : "";
+
+        let client = "UNBEKANNT";
+        const cMatch = txt.match(/für\s+(.+?)(\s+über|\s+mit|\s+wegen|\s*$)/i);
+        if (cMatch) client = cMatch[1].trim();
+
+        return {
+          intent: "create_dunning",
+          params: {
+            level: 1,
+            client,
+            invoice_no,
+            amount,
+            currency: "EUR",
+            due_date: "",
+            days_overdue: null,
+            letter: ""
+          }
+        };
+      }
+
+      // 2) SCAN-MODUS
+      if (
+        lowerTxt.startsWith("scanne") ||
+        lowerTxt.includes("barcode") ||
+        lowerTxt.includes("scanner")
+      ) {
+        return { intent: "scan_item", params: {} };
+      }
+
+      // 3) einfache Modul-Opener
+      if (lowerTxt.includes("lager")) {
+        return { intent: "open_module", params: { module: "lagerbestand.html" } };
+      }
+      if (lowerTxt.includes("rechnung")) {
+        return { intent: "open_module", params: { module: "rechnung.html" } };
+      }
+      if (lowerTxt.includes("angebot")) {
+        return { intent: "open_module", params: { module: "angebot.html" } };
+      }
+      if (lowerTxt.includes("mahnwesen") || lowerTxt.includes("mahnung")) {
+        return { intent: "open_module", params: { module: "mahnwesen.html" } };
+      }
+      if (lowerTxt.includes("kunde")) {
+        return { intent: "open_module", params: { module: "kundenanlegen.html" } };
+      }
+      if (lowerTxt.includes("umsatz")) {
+        return { intent: "open_module", params: { module: "umsatz.html" } };
+      }
+      if (lowerTxt.includes("spesen")) {
+        return { intent: "open_module", params: { module: "spesen.html" } };
+      }
+      if (lowerTxt.includes("dashboard")) {
+        return { intent: "open_module", params: { module: "dashboard.html" } };
+      }
+      if (lowerTxt.includes("termine")) {
+        return { intent: "open_module", params: { module: "termine.html" } };
+      }
+      if (lowerTxt.includes("zeit")) {
+        return { intent: "open_module", params: { module: "zeiterfassung.html" } };
+      }
+
+      // Großprojekte
+      if (
+        lowerTxt.includes("großprojekt") ||
+        lowerTxt.includes("grossprojekt") ||
+        lowerTxt.includes("projekte")
+      ) {
+        return { intent: "open_big_projects", params: {} };
+      }
+
+      // Logbuch
+      if (lowerTxt.includes("logbuch") || lowerTxt.includes("logs")) {
+        return { intent: "open_module", params: { module: "logbuch.html" } };
+      }
+
+      // Befehle / Commands
+      if (
+        lowerTxt.includes("befehle") ||
+        lowerTxt.includes("befehlsübersicht") ||
+        lowerTxt.includes("commands") ||
+        lowerTxt.includes("befehl")
+      ) {
+        return { intent: "open_module", params: { module: "commands.html" } };
+      }
+
+      // 4) Zeiterfassung (Fallback)
+      if (lowerTxt.startsWith("buche") && (lowerTxt.includes("stunde") || lowerTxt.includes("stunden") || lowerTxt.includes("h "))) {
+        let hours = null;
+        const hMatch = txt.match(/buche\s+(\d+[.,]?\d*)/i);
+        if (hMatch) hours = hMatch[1].replace(",", ".");
+
+        let project = mem.lastProject || "UNSPECIFIED";
+        const pMatch = txt.match(/für\s+(.+?)(\s+zum|\s+mit|\s+bei|\s*$)/i);
+        if (pMatch) project = pMatch[1].trim();
+
+        let rate = mem.lastRate || 140;
+        const rMatch = txt.match(/satz\s+(\d+[.,]?\d*)/i);
+        if (rMatch) rate = Number(rMatch[1].replace(",", "."));
+
+        return {
+          intent: "add_time_entry",
+          params: {
+            hours: hours ? Number(hours) : null,
+            project,
+            rate,
+            description: "Fallback-Buchung"
+          }
+        };
+      }
+
+      // 5) Begrüßung / Hilfe
+      if (["hallo", "hi", "hey", "servus", "morgen", "moin"].some(k => lowerTxt.startsWith(k))) {
+        return { intent: "greeting", params: {} };
+      }
+
+      if (lowerTxt === "?" || lowerTxt.includes("hilfe") || lowerTxt.includes("help")) {
+        return { intent: "help", params: {} };
+      }
+
+      // 6) Fallback
+      return { intent: "fallback_command", params: {} };
+    }
+
+    /* ---------- SEND / GPT-Call ---------- */
+    const BACKEND_URL = "/api/jarvis";
+
+    async function routeCommand(txt) {
+      try {
+        const res = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: txt,
+            context: mem
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error("Backend error " + res.status);
+        }
+
+        return await res.json();
+      } catch (e) {
+        console.warn("Backend nicht erreichbar, fallback auf simulateKI:", e);
+        return simulateKI(txt);
+      }
+    }
+
+    async function send() {
+      const txt = input.value.trim();
+      if (!txt) return;
+
+      log(txt, "user");
+      input.value = "";
+      mem.lastCommand = txt;
+
+      typing.style.display = "block";
+      const data = await routeCommand(txt);
+      typing.style.display = "none";
+      executeAction(data);
+    }
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        send();
+      }
+    });
+
+    /* INITIAL BOOT MESSAGE */
+    ops(
+      `UNIT: JARVIS-V4
+CORE: GPT-LINKED
 STATUS: ONLINE
-MODE: DARKOPS MOBILE
+MODE: ULTIMATE
 COMMANDER: AICHMAYR
 READY FOR NEXT DIRECTIVE`
-);
+    );
 
-/* Kurzer Reminder für iOS: Add to Home Screen */
-setTimeout(()=>{
-  ops("HINT: On iOS Safari → Share → 'Add to Home Screen' to pin JARVIS as App. Type 'help' for all commands.");
-}, 2000);
-</script>
+    setTimeout(() => {
+      ops(
+        "HINT: z. B. 'Lege Kunde Trafik Steinweg KDN 4711 4050 Traun an', 'Umsatz 1500 für Tesla', 'Termin 21.11.2025 14:00 Meeting mit Kunde X', 'Buche 2 Stunden für ACME zum Satz 140' oder einfach 'Scanne'."
+      );
+    }, 2000);
+  </script>
+
+
 
 </body>
+
 </html>

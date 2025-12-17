@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Jarvis OS · System Logbuch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <style>
+    :root {
+      --bg: #000000;
+      --card: #020617;
+      --border: 1px solid rgba(148, 163, 184, 0.35);
+      --accent: #1a9cff;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+      background: radial-gradient(circle at top, #020617 0, #000 70%);
+    }
+
+    header img {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 2px solid #e5e7eb;
+      object-fit: cover;
+    }
+
+    .head-main {
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .head-sub {
+      font-size: 11px;
+      letter-spacing: 1.3px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* MAIN */
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 14px 10px calc(18px + env(safe-area-inset-bottom));
+    }
+
+    /* GRID/CARDS */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: var(--border);
+      padding: 10px 10px 12px;
+    }
+
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .card .sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* LOG-LISTE */
+    .log-list {
+      max-height: 260px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .log-item {
+      border-bottom: 1px solid rgba(55, 65, 81, 0.6);
+      padding: 6px 0;
+      font-size: 12px;
+    }
+
+    .log-item:last-child {
+      border-bottom: none;
+    }
+
+    .log-time {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .log-tag {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      margin-right: 4px;
+    }
+
+    .log-text {
+      margin-top: 2px;
+    }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(55, 65, 81, 0.8);
+      padding: 4px 3px;
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      color: #9ca3af;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #020617;
+    }
+
+    /* INPUT / BUTTONS */
+    textarea,
+    input {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: #020617;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    button {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: #020617;
+      color: var(--text);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #020617;
+      font-weight: 600;
+    }
+
+    button.danger {
+      border-color: #f87171;
+      color: #fecaca;
+    }
+
+    .small {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 6px 12px 10px;
+      font-size: 10px;
+      color: #6b7280;
+      border-top: 1px solid rgba(15, 23, 42, 0.8);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <img src="A_digital_vector_image_presents_a_circular_logo_wi.png" alt="Patch">
+    <div>
+      <div class="head-main">Jarvis OS · System Logbuch</div>
+      <div class="head-sub">DarkOps Mission Logs · Commander: Aichmayr</div>
+    </div>
+  </header>
+
+  <main>
+
+    <div class="grid">
+
+      <!-- MISSION LOGS (manual + aus LocalStorage) -->
+      <div class="card">
+        <h2>Mission Logs</h2>
+        <div class="sub">Freitext-Logeinträge + alles aus <code>missionLogs</code>.</div>
+
+        <textarea id="logInput" placeholder="Neuen Logeintrag hinzufügen (z. B. 'Angebot an ACME gesendet')"></textarea>
+        <div class="btn-row">
+          <button class="primary" onclick="addManualLog()">Log speichern</button>
+          <button onclick="reloadAll()">Aktualisieren</button>
+          <button class="danger" onclick="clearMissionLogs()">Mission Logs löschen</button>
+        </div>
+        <div class="small" id="missionInfo"></div>
+
+        <div class="log-list" id="missionList"></div>
+      </div>
+
+      <!-- UMSATZ / EREIGNISSE -->
+      <div class="card">
+        <h2>Umsatz-Events</h2>
+        <div class="sub">Einträge aus <code>umsatzListe</code> (DarkOps / Jarvis-Befehle).</div>
+        <div class="small" id="umsatzInfo"></div>
+        <div style="max-height:260px;overflow:auto;padding-right:4px;">
+          <table id="umsatzTable">
+            <thead>
+              <tr>
+                <th>Betrag €</th>
+                <th>Client</th>
+                <th>Projekt</th>
+                <th>Datum</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="btn-row" style="margin-top:6px;">
+          <button onclick="exportUmsatzCSV()">Umsatz CSV Export</button>
+        </div>
+      </div>
+
+      <!-- PROJEKTE / TERMINE / BACKUPS -->
+      <div class="card">
+        <h2>Systemstatus</h2>
+        <div class="sub">Kurzüberblick über Projekte, Termine & Backups.</div>
+
+        <div class="small" id="projectInfo"></div>
+        <div class="small" id="apptInfo" style="margin-top:4px;"></div>
+        <div class="small" id="backupInfo" style="margin-top:4px;"></div>
+
+        <div style="margin-top:8px;">
+          <h3 style="margin:4px 0 4px;font-size:11px;text-transform:uppercase;">Letzte Backups</h3>
+          <div class="log-list" id="backupList"></div>
+        </div>
+
+        <div class="btn-row" style="margin-top:6px;">
+          <button onclick="exportFullSnapshot()">Full Snapshot (JSON)</button>
+          <button class="danger" onclick="clearBackups()">Backups löschen</button>
+          <button onclick="window.location.href='jarvis_v4_darkops_mobile.html'">Zurück zu Jarvis</button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    <div>Jarvis OS · Log Module V1.0 · Local Only</div>
+    <div id="footerStatus">Status: bereit</div>
+  </footer>
+
+  <script>
+    // Helper
+    function $(id) { return document.getElementById(id); }
+    function safeParse(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return fallback;
+        return JSON.parse(raw);
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    // Mission Logs
+    function loadMissionLogs() {
+      const logs = safeParse("missionLogs", []);
+      const list = $("missionList");
+      const info = $("missionInfo");
+
+      if (!logs.length) {
+        list.innerHTML = '<div class="small" style="margin-top:6px;">Keine Mission Logs vorhanden.</div>';
+        info.textContent = "Einträge: 0";
+        return;
+      }
+
+      const sorted = logs.slice().sort((a, b) => {
+        return (b.time || "").localeCompare(a.time || "");
+      });
+
+      info.textContent = "Einträge: " + sorted.length;
+
+      list.innerHTML = sorted.map(l => {
+        const time = l.time || l.date || "";
+        const event = l.event || l.type || "Event";
+        const detail = l.detail || l.text || l.message || "";
+        return `
+      <div class="log-item">
+        <div class="log-time">${time}</div>
+        <div><span class="log-tag">${event}</span></div>
+        <div class="log-text">${detail}</div>
+      </div>
+    `;
+      }).join("");
+    }
+
+    function addManualLog() {
+      const txt = $("logInput").value.trim();
+      if (!txt) return;
+      const logs = safeParse("missionLogs", []);
+      logs.push({
+        event: "MANUAL",
+        detail: txt,
+        time: new Date().toISOString()
+      });
+      localStorage.setItem("missionLogs", JSON.stringify(logs));
+      $("logInput").value = "";
+      $("footerStatus").textContent = "Status: Log gespeichert.";
+      loadMissionLogs();
+    }
+
+    function clearMissionLogs() {
+      if (!confirm("Wirklich alle Mission Logs löschen?")) return;
+      localStorage.removeItem("missionLogs");
+      loadMissionLogs();
+      $("footerStatus").textContent = "Status: Mission Logs gelöscht.";
+    }
+
+    // Umsatz
+    function loadUmsatz() {
+      const data = safeParse("umsatzListe", []);
+      const tbody = $("umsatzTable").querySelector("tbody");
+      const info = $("umsatzInfo");
+
+      if (!data.length) {
+        tbody.innerHTML = "";
+        info.textContent = "Einträge: 0 · Gesamt: 0,00 €";
+        return;
+      }
+
+      let sum = 0;
+      tbody.innerHTML = data.map(r => {
+        const amount = Number(r.amount || 0);
+        sum += amount;
+        return `
+      <tr>
+        <td>${amount.toFixed(2)}</td>
+        <td>${r.client || ""}</td>
+        <td>${r.project || ""}</td>
+        <td>${(r.date || "").replace("T", " ").replace("Z", "")}</td>
+      </tr>
+    `;
+      }).join("");
+      info.textContent = `Einträge: ${data.length} · Gesamt: ${sum.toFixed(2)} €`;
+    }
+
+    function exportUmsatzCSV() {
+      const data = safeParse("umsatzListe", []);
+      if (!data.length) {
+        alert("Keine Umsatzdaten vorhanden.");
+        return;
+      }
+      const header = "amount;client;project;date\n";
+      const rows = data.map(r =>
+        `${r.amount || 0};"${(r.client || "").replace(/"/g, '""')}";"${(r.project || "").replace(/"/g, '""')}";"${r.date || ""}"`
+      ).join("\n");
+      const csv = "\uFEFF" + header + rows;
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "umsatz_logs.csv";
+      a.click();
+    }
+
+    // Projekte / Termine / Backups
+    function loadProjects() {
+      const data = safeParse("bigProjects", []);
+      const info = $("projectInfo");
+      if (!data.length) {
+        info.textContent = "Projekte: 0 · Gesamtvolumen: 0,00 €";
+        return;
+      }
+      let sum = 0;
+      data.forEach(p => sum += Number(p.total || 0));
+      info.textContent = `Projekte: ${data.length} · Gesamtvolumen: ${sum.toFixed(2)} €`;
+    }
+
+    function loadAppointments() {
+      const data = safeParse("appointments", []);
+      const info = $("apptInfo");
+      if (!data.length) {
+        info.textContent = "Termine: 0";
+        return;
+      }
+      info.textContent = `Termine: ${data.length}`;
+    }
+
+    function loadBackups() {
+      const backups = safeParse("jarvisBackups", []);
+      const info = $("backupInfo");
+      const list = $("backupList");
+
+      if (!backups.length) {
+        info.textContent = "Backups: 0";
+        list.innerHTML = '<div class="small" style="margin-top:4px;">Noch keine Backups über den Launcher erstellt.</div>';
+        return;
+      }
+
+      info.textContent = `Backups: ${backups.length}`;
+
+      const latest = backups.slice().reverse().slice(0, 10);
+      list.innerHTML = latest.map((b, i) => {
+        const t = b.time || "";
+        const keys = b.data ? Object.keys(b.data).length : 0;
+        return `
+      <div class="log-item">
+        <div class="log-time">${t}</div>
+        <div class="log-text small">Backup #${backups.length - i} · Keys: ${keys}</div>
+      </div>
+    `;
+      }).join("");
+    }
+
+    function clearBackups() {
+      if (!confirm("Alle Launcher-Backups löschen?")) return;
+      localStorage.removeItem("jarvisBackups");
+      loadBackups();
+      $("footerStatus").textContent = "Status: Backups gelöscht.";
+    }
+
+    // Full Snapshot Export
+    function exportFullSnapshot() {
+      const snapshot = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        snapshot[k] = localStorage.getItem(k);
+      }
+      const payload = {
+        time: new Date().toISOString(),
+        snapshot
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "jarvis_full_snapshot.json";
+      a.click();
+      $("footerStatus").textContent = "Status: Full Snapshot exportiert.";
+    }
+
+    // Reload alles
+    function reloadAll() {
+      loadMissionLogs();
+      loadUmsatz();
+      loadProjects();
+      loadAppointments();
+      loadBackups();
+      $("footerStatus").textContent = "Status: Daten aktualisiert.";
+    }
+
+    // Initial
+    reloadAll();
+  </script>
+
+</body>
+
+</html>

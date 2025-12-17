@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aichmayr Technology · Lohnzettel</title>
+
+<style>
+:root { --pad: 14px; --border: 1px solid #ccc; --maxw: 980px; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#f6f7f9; }
+header { background:#111; color:#fff; padding: 14px 20px; }
+header h1 { margin:0; font-size: 18px; }
+main { max-width: var(--maxw); margin: 20px auto; padding: 0 12px 40px; }
+.card { background:#fff; border: var(--border); border-radius: 10px; padding: var(--pad); box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+.grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 10px; }
+.col-12{grid-column: span 12;}
+.col-6{grid-column: span 6;}
+.col-4{grid-column: span 4;}
+.col-3{grid-column: span 3;}
+label { display:block; font-size: 12px; color:#444; margin-bottom: 4px; }
+input, textarea, select { width: 100%; padding:10px; border: var(--border); border-radius:8px; font-size:14px; box-sizing:border-box; }
+textarea { min-height: 70px; }
+table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 14px; }
+th, td { border: var(--border); padding:8px; text-align:left; vertical-align: top;}
+tfoot td { font-weight: 600; }
+button { padding:10px 14px; border-radius:8px; border:1px solid #111; background:#111; color:#fff; cursor:pointer; }
+button.secondary{ background:#fff; color:#111; }
+.actions { display:flex; gap:10px; margin:14px 0; flex-wrap:wrap; }
+.preview { background:#fff; padding: var(--pad); border: var(--border); border-radius: 10px; }
+small { font-size:11px; color:#666; }
+
+@media print {
+  header, .controls { display:none !important; }
+  body { background:#fff; }
+  main { margin:0; padding:0; max-width:100%; }
+  .preview { border:none; box-shadow:none; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Aichmayr Technology · Lohnzettel</h1>
+</header>
+
+<main>
+
+<section class="card controls">
+  <div class="grid">
+
+    <!-- Arbeitgeber -->
+    <div class="col-6">
+      <label>Arbeitgeber</label>
+      <input id="employer" placeholder="Marcel Aichmayr · Aichmayr Technology">
+    </div>
+    <div class="col-6">
+      <label>Adresse Arbeitgeber</label>
+      <input id="employerAddr" placeholder="Straße, PLZ Ort, Land">
+    </div>
+    <div class="col-4">
+      <label>E-Mail / Telefon</label>
+      <input id="employerContact" placeholder="mail@domain.at · +43 ...">
+    </div>
+    <div class="col-4">
+      <label>UID / Firmenbuch (optional)</label>
+      <input id="employerUid">
+    </div>
+    <div class="col-4">
+      <label>IBAN (Auszahlungskonto)</label>
+      <input id="employerIban">
+    </div>
+
+    <!-- Arbeitnehmer -->
+    <div class="col-6">
+      <label>Mitarbeiter/in</label>
+      <input id="employee" placeholder="Name Mitarbeiter/in">
+    </div>
+    <div class="col-6">
+      <label>Adresse Mitarbeiter/in</label>
+      <input id="employeeAddr" placeholder="Straße, PLZ Ort, Land">
+    </div>
+    <div class="col-4">
+      <label>SV-Nummer (optional)</label>
+      <input id="svnr" placeholder="">
+    </div>
+    <div class="col-4">
+      <label>Personalnummer (optional)</label>
+      <input id="personalNo" placeholder="">
+    </div>
+    <div class="col-4">
+      <label>Funktion / Position</label>
+      <input id="position" placeholder="z. B. Mitarbeiter/in Verkauf">
+    </div>
+
+    <!-- Zeitraum -->
+    <div class="col-4">
+      <label>Abrechnungsmonat</label>
+      <input id="month" placeholder="z. B. 11/2025">
+    </div>
+    <div class="col-4">
+      <label>Auszahlungsdatum</label>
+      <input id="payoutDate" type="date">
+    </div>
+    <div class="col-4">
+      <label>Arbeitszeitmodell</label>
+      <input id="workModel" placeholder="z. B. Vollzeit, 40h/Woche">
+    </div>
+
+    <!-- Beträge -->
+    <div class="col-4">
+      <label>Bruttolohn (€)</label>
+      <input id="brutto" type="number" step="0.01" value="0">
+    </div>
+    <div class="col-4">
+      <label>Zulagen / Prämien (€)</label>
+      <input id="allowances" type="number" step="0.01" value="0">
+    </div>
+    <div class="col-4">
+      <label>Abzüge (LSt, SV, DG-Anteile, etc.) gesamt (€)</label>
+      <input id="deductions" type="number" step="0.01" value="0">
+    </div>
+
+    <div class="col-3">
+      <label>Arbeitsstunden im Monat</label>
+      <input id="hours" type="number" step="0.01" value="0">
+    </div>
+    <div class="col-3">
+      <label>Stundenlohn (Info)</label>
+      <input id="hourlyInfo" readonly>
+    </div>
+
+    <div class="col-12">
+      <label>Detail zu Zulagen / Abzügen (frei)</label>
+      <textarea id="details" placeholder="z. B. Zulagen: Überstundenpauschale, Diäten ...&#10;Abzüge: Lohnsteuer, Sozialversicherung, Gewerkschaftsbeitrag ..."></textarea>
+    </div>
+
+    <div class="col-12 actions">
+      <button type="button" onclick="render()">Vorschau aktualisieren</button>
+      <button type="button" class="secondary" onclick="window.print()">PDF / Druck</button>
+    </div>
+  </div>
+</section>
+
+<section class="preview" id="preview"></section>
+
+</main>
+
+<script>
+function money(x){
+  return (Math.round(Number(x || 0) * 100) / 100).toFixed(2);
+}
+
+function render(){
+  const e = id => document.getElementById(id).value;
+
+  const brutto     = parseFloat(e("brutto"))     || 0;
+  const allowances = parseFloat(e("allowances"))|| 0;
+  const deductions = parseFloat(e("deductions"))|| 0;
+  const netto      = brutto + allowances - deductions;
+
+  const hours = parseFloat(e("hours")) || 0;
+  const hourly = hours > 0 ? brutto / hours : 0;
+  document.getElementById("hourlyInfo").value = hours > 0 ? money(hourly) + " €/h" : "";
+
+  const logo = `<img src="aichmayr-technology-logo.png" style="height:70px; margin-bottom:12px;">`;
+
+  const month = e("month") || "";
+  const payout = e("payoutDate") || "";
+
+  document.getElementById("preview").innerHTML = `
+    <div style="display:flex; justify-content:space-between;">
+      <div>
+        ${logo}
+        <div style="font-weight:bold; font-size:18px;">${e("employer")}</div>
+        <div>${e("employerAddr")}</div>
+        <div>${e("employerContact")}</div>
+        <div>${e("employerUid")}</div>
+        <div>${e("employerIban")}</div>
+      </div>
+
+      <div style="text-align:right; font-size:13px;">
+        <h2 style="margin:0;">Lohnzettel</h2>
+        <b>Abrechnungsmonat:</b> ${month || "-"}<br>
+        <b>Auszahlungsdatum:</b> ${payout || "-"}<br>
+        <b>Arbeitszeitmodell:</b> ${e("workModel") || "-"}
+      </div>
+    </div>
+
+    <hr>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:13px;">
+      <div>
+        <b>Mitarbeiter/in</b><br>
+        ${e("employee") || "-"}<br>
+        ${e("employeeAddr") || ""}<br>
+      </div>
+      <div style="text-align:right;">
+        <b>SV-Nummer:</b> ${e("svnr") || "-"}<br>
+        <b>Personalnummer:</b> ${e("personalNo") || "-"}<br>
+        <b>Funktion:</b> ${e("position") || "-"}
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Beschreibung</th>
+          <th style="text-align:right;">Betrag (€)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Bruttolohn</td>
+          <td style="text-align:right;">${money(brutto)}</td>
+        </tr>
+        <tr>
+          <td>Zulagen / Prämien gesamt</td>
+          <td style="text-align:right;">${money(allowances)}</td>
+        </tr>
+        <tr>
+          <td>Abzüge (Lohnsteuer, Sozialversicherung, etc.) gesamt</td>
+          <td style="text-align:right;">– ${money(deductions)}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td style="text-align:right; font-weight:bold;">Auszahlungsbetrag (Netto)</td>
+          <td style="text-align:right; font-weight:bold;">${money(netto)} €</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p style="margin-top:14px; white-space:pre-wrap; font-size:13px;">
+      ${e("details")}
+    </p>
+
+    <p style="margin-top:10px; font-size:12px;">
+      Gearbeitete Stunden im Monat: <b>${hours || 0}</b><br>
+      (informativ) rechnerischer Stundenlohn Brutto: <b>${hours ? money(hourly) + " €/h" : "-"}</b>
+    </p>
+
+    <p style="margin-top:12px;">
+      ________________________________<br>
+      Arbeitgeber / Dienstgeber
+    </p>
+
+    <p style="margin-top:8px;">
+      ________________________________<br>
+      Mitarbeiter/in (zur Kenntnisnahme)
+    </p>
+
+    <small>
+      Hinweis: Dieser Lohnzettel wurde automatisch mit einem Hilfstool erstellt und ersetzt keine
+      steuerliche oder arbeitsrechtliche Beratung. Alle Beträge basieren auf den eingegebenen Werten.
+    </small>
+  `;
+}
+
+// kleine Defaults
+(function init(){
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById("payoutDate").value = today;
+
+  // Abrechnungsmonat vorbelegen
+  const d = new Date();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const y = d.getFullYear();
+  document.getElementById("month").value = m + "/" + y;
+
+  // Live-Update
+  document.querySelectorAll("input, textarea").forEach(el=>{
+    el.addEventListener("input", render);
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
+
+

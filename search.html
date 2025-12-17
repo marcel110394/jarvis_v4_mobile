@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Jarvis · Global Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body{
+    margin:0;
+    padding:0;
+    background:#000;
+    color:#fff;
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  header{
+    padding:14px 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  main{
+    padding:12px 14px;
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  .searchRow{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .searchRow input{
+    flex:1;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.3);
+    background:#080808;
+    color:#fff;
+    font-size:13px;
+  }
+  .searchRow button{
+    padding:8px 12px;
+    border-radius:10px;
+    border:none;
+    background:#fff;
+    color:#000;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .info{
+    font-size:11px;
+    color:#aaa;
+    margin-bottom:10px;
+  }
+  h2{
+    margin:10px 0 4px;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .section{
+    border-top:1px solid rgba(255,255,255,0.16);
+    padding-top:4px;
+    margin-top:2px;
+  }
+  .item{
+    padding:8px 4px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    font-size:13px;
+  }
+  .item-title{
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .item-meta{
+    font-size:11px;
+    color:#bbb;
+  }
+  .item-body{
+    font-size:12px;
+    color:#ddd;
+    margin-top:3px;
+  }
+  .empty{
+    font-size:12px;
+    color:#777;
+    padding:4px 0 8px;
+  }
+  .pill{
+    display:inline-block;
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.3);
+    margin-left:6px;
+    opacity:0.8;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>Jarvis · Global Search</div>
+  <button class="btn-ghost" onclick="window.close()">Schließen</button>
+</header>
+<main>
+  <div class="searchRow">
+    <input id="q" placeholder="Suche in Kunden, Umsatz, Terminen, Lager, Chats...">
+    <button onclick="runSearch()">Search</button>
+  </div>
+  <div class="info">
+    Beispiel: <code style="font-family:monospace;">suche esp32</code> in Jarvis öffnen → dieses Modul mit voreingestellter Suche.
+  </div>
+
+  <div id="noQuery" class="empty">Bitte einen Suchbegriff eingeben.</div>
+
+  <div id="results" style="display:none;">
+    <h2>Kunden <span id="cntClients" class="pill"></span></h2>
+    <div id="clients" class="section"></div>
+
+    <h2>Umsatz / Rechnungen <span id="cntRevenue" class="pill"></span></h2>
+    <div id="revenue" class="section"></div>
+
+    <h2>Termine <span id="cntAppointments" class="pill"></span></h2>
+    <div id="appointments" class="section"></div>
+
+    <h2>Lagerbestand <span id="cntInventory" class="pill"></span></h2>
+    <div id="inventory" class="section"></div>
+
+    <h2>Kunden-Chat <span id="cntChats" class="pill"></span></h2>
+    <div id="chats" class="section"></div>
+
+    <h2>Mission Logs <span id="cntMissions" class="pill"></span></h2>
+    <div id="missions" class="section"></div>
+  </div>
+</main>
+
+<script>
+function getClients(){
+  return JSON.parse(localStorage.getItem("db_clients") || "[]");
+}
+function getRevenue(){
+  return JSON.parse(localStorage.getItem("umsatzListe") || "[]");
+}
+function getAppointments(){
+  return JSON.parse(localStorage.getItem("appointments") || "[]");
+}
+function getInventory(){
+  return JSON.parse(localStorage.getItem("inventory") || "[]");
+}
+function getChats(){
+  return JSON.parse(localStorage.getItem("chats") || "[]");
+}
+function getMissions(){
+  return JSON.parse(localStorage.getItem("missionLogs") || "[]");
+}
+
+function el(id){ return document.getElementById(id); }
+
+function renderSection(list, containerId, emptyText){
+  const box = el(containerId);
+  if(list.length === 0){
+    box.innerHTML = `<div class="empty">${emptyText}</div>`;
+    return;
+  }
+  box.innerHTML = "";
+  list.forEach(item => box.appendChild(item));
+}
+
+function makeItem(title, meta, body){
+  const div = document.createElement("div");
+  div.className = "item";
+  div.innerHTML = `
+    <div class="item-title">${title}</div>
+    ${meta ? `<div class="item-meta">${meta}</div>` : ""}
+    ${body ? `<div class="item-body">${body}</div>` : ""}
+  `;
+  return div;
+}
+
+function runSearch(){
+  const q = (el("q").value || "").trim().toLowerCase();
+  if(!q){
+    el("noQuery").style.display = "block";
+    el("results").style.display = "none";
+    return;
+  }
+  el("noQuery").style.display = "none";
+  el("results").style.display = "block";
+
+  // Clients
+  const clients = getClients();
+  const clientHits = [];
+  clients.forEach(c=>{
+    const hay = ((c.name||"") + " " + (c.id||"") + " " + (c.email||"") + " " + (c.address||"")).toLowerCase();
+    if(hay.includes(q)){
+      clientHits.push(
+        makeItem(
+          c.name || "(ohne Name)",
+          `ID: ${c.id || "-"} · Email: ${c.email || "-"} · Tel: ${c.phone || "-"}`,
+          c.address || ""
+        )
+      );
+    }
+  });
+  el("cntClients").textContent = clientHits.length;
+  renderSection(clientHits, "clients", "Keine Kunden-Treffer.");
+
+  // Revenue
+  const rev = getRevenue();
+  const revHits = [];
+  rev.forEach(r=>{
+    const hay = ((r.client||"") + " " + (r.project||"") + " " + (r.date||"")).toLowerCase();
+    const amtStr = String(r.amount || "");
+    if(hay.includes(q) || amtStr.includes(q)){
+      const d = r.date ? new Date(r.date).toLocaleString("de-AT", {dateStyle:"short", timeStyle:"short"}) : "-";
+      revHits.push(
+        makeItem(
+          `${r.client || "Unbekannter Kunde"} · € ${Number(r.amount||0).toFixed(2)}`,
+          `Projekt: ${r.project || "-"} · Datum: ${d}`,
+          ""
+        )
+      );
+    }
+  });
+  el("cntRevenue").textContent = revHits.length;
+  renderSection(revHits, "revenue", "Keine Umsatz-Treffer.");
+
+  // Appointments
+  const apps = getAppointments();
+  const appHits = [];
+  apps.forEach(a=>{
+    const hay = ((a.title||"") + " " + (a.location||"") + " " + (a.notes||"")).toLowerCase();
+    if(hay.includes(q) || (a.date||"").includes(q) || (a.time||"").includes(q)){
+      appHits.push(
+        makeItem(
+          a.title || "(ohne Titel)",
+          `${a.date || "-"} · ${a.time || ""} · ${a.location || ""}`,
+          a.notes || ""
+        )
+      );
+    }
+  });
+  el("cntAppointments").textContent = appHits.length;
+  renderSection(appHits, "appointments", "Keine Termin-Treffer.");
+
+  // Inventory
+  const inv = getInventory();
+  const invHits = [];
+  inv.forEach(i=>{
+    const hay = ((i.name||"") + " " + (i.sku||"") + " " + (i.category||"") + " " + (i.notes||"")).toLowerCase();
+    if(hay.includes(q)){
+      invHits.push(
+        makeItem(
+          i.name || "(ohne Name)",
+          `SKU: ${i.sku || "-"} · Kat.: ${i.category || "-"} · Bestand: ${i.stock || 0}`,
+          i.notes || ""
+        )
+      );
+    }
+  });
+  el("cntInventory").textContent = invHits.length;
+  renderSection(invHits, "inventory", "Keine Lager-Treffer.");
+
+  // Chats
+  const chats = getChats();
+  const chatHits = [];
+  chats.forEach(c=>{
+    const hay = (c.text || "").toLowerCase();
+    if(hay.includes(q)){
+      const t = c.time ? new Date(c.time).toLocaleString("de-AT", {dateStyle:"short", timeStyle:"short"}) : "-";
+      chatHits.push(
+        makeItem(
+          c.text.slice(0,60) + (c.text.length>60?"…":""),
+          `Kunde-ID: ${c.clientId || "-"} · Sender: ${c.who || "-"} · ${t}`,
+          ""
+        )
+      );
+    }
+  });
+  el("cntChats").textContent = chatHits.length;
+  renderSection(chatHits, "chats", "Keine Chat-Treffer.");
+
+  // Mission Logs
+  const logs = getMissions();
+  const logHits = [];
+  logs.forEach(m=>{
+    const hay = ((m.event||"") + " " + (m.detail||"")).toLowerCase();
+    if(hay.includes(q)){
+      const t = m.time ? new Date(m.time).toLocaleString("de-AT", {dateStyle:"short", timeStyle:"short"}) : "-";
+      logHits.push(
+        makeItem(
+          m.event || "(ohne Event)",
+          `Zeit: ${t}`,
+          m.detail || ""
+        )
+      );
+    }
+  });
+  el("cntMissions").textContent = logHits.length;
+  renderSection(logHits, "missions", "Keine Log-Treffer.");
+}
+
+// Query aus URL übernehmen (z.B. ?q=esp32)
+(function initFromUrl(){
+  const params = new URLSearchParams(location.search);
+  const q = params.get("q");
+  if(q){
+    el("q").value = q;
+    runSearch();
+  }
+})();
+
+// Enter-Handling
+document.getElementById("q").addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    e.preventDefault();
+    runSearch();
+  }
+});
+</script>
+</body>
+</html>
+
+

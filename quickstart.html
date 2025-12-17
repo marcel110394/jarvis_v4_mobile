@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>JARVIS OS · QuickStart Dashboard</title>
+
+<!-- MOBILE -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jarvis OS">
+<meta name="theme-color" content="#000000">
+
+<!-- ICON -->
+<link rel="apple-touch-icon" href="A_digital_vector_image_presents_a_circular_logo_wi.png">
+<link rel="icon" href="A_digital_vector_image_presents_a_circular_logo_wi.png">
+
+<style>
+/* GLOBAL */
+html,body{
+    margin:0;
+    padding:0;
+    background:#000;
+    color:#fff;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    height:100%;
+}
+
+header{
+    padding:20px;
+    padding-top:calc(20px + env(safe-area-inset-top));
+    text-align:center;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+}
+
+header img{
+    height:90px;
+    width:90px;
+    border-radius:50%;
+    border:2px solid #fff;
+}
+
+h1{
+    margin-top:12px;
+    font-size:18px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+    padding:20px;
+    padding-bottom:calc(40px + env(safe-area-inset-bottom));
+}
+
+.card{
+    background:#0a0a0a;
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:12px;
+    padding:18px;
+    text-align:center;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.5px;
+    cursor:pointer;
+    user-select:none;
+    transition:0.2s;
+}
+
+.card:hover{
+    background:#111;
+    border-color:#fff;
+}
+
+.card:active{
+    background:#222;
+}
+
+footer{
+    text-align:center;
+    font-size:10px;
+    color:#666;
+    padding:12px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <img src="A_digital_vector_image_presents_a_circular_logo_wi.png">
+    <h1>Jarvis OS · QuickStart</h1>
+</header>
+
+<div class="grid">
+
+    <div class="card" onclick="openModule('jarvis.html')">
+        🔥 JARVIS Konsole
+    </div>
+
+    <div class="card" onclick="openModule('angebot.html')">
+        📄 Angebot erstellen
+    </div>
+
+    <div class="card" onclick="openModule('rechnung.html')">
+        💰 Rechnung erstellen
+    </div>
+
+    <div class="card" onclick="openModule('kunden.html')">
+        🧑‍💼 Kundenverwaltung
+    </div>
+
+    <div class="card" onclick="openModule('projekte.html')">
+        🚀 Großprojekte
+    </div>
+
+    <div class="card" onclick="openModule('timetracking.html')">
+        ⏱ Zeiterfassung
+    </div>
+
+    <div class="card" onclick="openModule('spesen.html')">
+        🧾 Spesen & Reisekosten
+    </div>
+
+    <div class="card" onclick="openModule('lager.html')">
+        📦 Lagerbestand
+    </div>
+
+    <div class="card" onclick="openModule('termine.html')">
+        📅 Termine / Kalender
+    </div>
+
+    <div class="card" onclick="openModule('mahnung.html')">
+        ⚠️ Mahnwesen
+    </div>
+
+    <div class="card" onclick="openModule('umsatz.html')">
+        📊 Umsatz Dashboard
+    </div>
+
+    <div class="card" onclick="openModule('search.html')">
+        🔎 Globale Suche
+    </div>
+
+</div>
+
+<footer>
+    Aichmayr Technology · DarkOps Build V4.1 · Commander Unit Online
+</footer>
+
+<script>
+function openModule(page){
+    window.location.href = page;
+}
+</script>
+
+</body>
+</html>
+

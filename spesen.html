@@ -208,6 +208,10 @@
       <label>Projekt / Kunde</label>
       <input id="project" placeholder="z. B. ACME Workshop Wien">
     </div>
+    <div class="field">
+  <label>Kundennummer / Referenz</label>
+  <input id="customerNo" placeholder="z. B. KND-2025-001">
+</div>
     <div class="field field-full">
       <label>Kategorie</label>
       <select id="category">
@@ -221,7 +225,6 @@
       </select>
     </div>
 
-    <!-- REISEZEIT -->
     <div class="field">
       <label>Reisezeit (h)</label>
       <input type="number" step="0.1" min="0" id="travelHours" placeholder="z. B. 3.5">
@@ -231,7 +234,6 @@
       <input type="number" step="1" min="0" id="travelRate" placeholder="z. B. 40">
     </div>
 
-    <!-- AUTO -->
     <div class="field">
       <label>Auto – km</label>
       <input type="number" step="1" min="0" id="km" placeholder="z. B. 120">
@@ -241,7 +243,6 @@
       <input type="number" step="0.01" min="0" id="kmRate" placeholder="z. B. 0.42">
     </div>
 
-    <!-- FLUG / BAHN / HOTEL / VERPFLEGUNG / SONSTIGE KOSTEN -->
     <div class="field">
       <label>Betrag (€)</label>
       <input type="number" step="0.01" min="0" id="amount" placeholder="Falls manuell eingeben">
@@ -288,10 +289,47 @@
         <option value="sonstiges">Sonstiges</option>
       </select>
       <button class="btn-secondary" onclick="exportCSV()">CSV Export</button>
+<button class="btn-secondary" onclick="printReport()">PDF-Report</button>
+
     </div>
   </div>
 
   <div id="tableWrapper"></div>
+  <div style="margin-top:10px; font-size:11px;">
+    <label style="display:block; margin-bottom:4px;">
+      Projekt-Check (Summe Spesen vs. Rechnungsbetrag)
+    </label>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <input
+        id="checkProject"
+        placeholder="Projekt / Kunde wie im Spesen-Eintrag"
+        style="flex:2; padding:6px 8px; border-radius:8px;
+               border:1px solid rgba(255,255,255,0.3);
+               background:#080808; color:#fff; font-size:11px;"
+      >
+      <input
+        id="checkTarget"
+        type="number"
+        step="0.01"
+        min="0"
+        placeholder="Rechnung € (optional)"
+        style="flex:1; padding:6px 8px; border-radius:8px;
+               border:1px solid rgba(255,255,255,0.3);
+               background:#080808; color:#fff; font-size:11px;"
+      >
+      <button
+        class="btn-secondary"
+        type="button"
+        onclick="projectCheck()"
+        style="font-size:11px;"
+      >
+        Projekt-Check
+      </button>
+    </div>
+    <div id="checkResult" class="status" style="margin-top:4px;"></div>
+  </div>
+
+
 </main>
 
 <script>
@@ -303,6 +341,7 @@ function todayStr(){
   const d = new Date();
   return d.toISOString().slice(0,10);
 }
+let currentEditId = null; // merkt sich, ob wir gerade einen Eintrag bearbeiten
 
 /* Storage-Handling */
 function getExpenses(){
@@ -322,17 +361,33 @@ function saveExpenses(list){
 /* Betrag berechnen basierend auf Kategorie */
 function calcAmount(){
   const cat  = el("category").value;
-  const h    = parseFloat(el("travelHours").value || 0);
-  const hr   = parseFloat(el("travelRate").value || 0);
+  let h      = parseFloat(el("travelHours").value || 0);
+  let hr     = parseFloat(el("travelRate").value || 0);
   const km   = parseFloat(el("km").value || 0);
   const kmR  = parseFloat(el("kmRate").value || 0);
 
   let amt = parseFloat(el("amount").value || 0);
 
-  if(cat === "reisezeit" && h>0 && hr>0){
-    amt = h * hr;
+  // REISEZEIT – möglichst intelligent rechnen
+  if(cat === "reisezeit"){
+    // Fall 1: Stunden + Satz -> Betrag
+    if(h > 0 && hr > 0){
+      amt = h * hr;
+    }
+    // Fall 2: Betrag + Stunden -> Satz
+    else if(amt > 0 && h > 0 && (!hr || hr <= 0)){
+      hr = amt / h;
+      el("travelRate").value = money(hr);
+    }
+    // Fall 3: Betrag + Satz -> Stunden
+    else if(amt > 0 && hr > 0 && (!h || h <= 0)){
+      h = amt / hr;
+      el("travelHours").value = (Math.round(h*10)/10).toString(); // auf 0,1h runden
+    }
   }
-  if(cat === "auto" && km>0 && kmR>0){
+
+  // AUTO – km * Satz -> Betrag
+  if(cat === "auto" && km > 0 && kmR > 0){
     amt = km * kmR;
   }
 
@@ -346,7 +401,6 @@ function calcAmount(){
   el("status").textContent = "Betrag berechnet: " + money(amt) + " €";
   el("status").className = "status status-ok";
 }
-
 /* Formular zurücksetzen */
 function resetForm(){
   el("form").reset();
@@ -467,11 +521,16 @@ function renderList(){
           ${e.description || ""}
           ${e.notes ? `<br><span style="color:#aaa;">${e.notes}</span>` : ""}
           ${tagHtml ? `<br>${tagHtml}` : ""}
-        </td>
+          ${e.customerNo ? `<br><span style="color:#aaa;">Kundennr: ${e.customerNo}</span>` : ""}
+          ${e.notes ? `<br><span style="color:#aaa;">${e.notes}</span>` : ""}
+          ${tagHtml ? `<br>${tagHtml}` : ""}
+
+    </td>
         <td class="right">${money(e.amount)} ${e.currency || "EUR"}</td>
         <td class="right">
-          <button class="btn-ghost" style="font-size:11px; padding:3px 6px;" onclick="deleteSingle('${e.id}')">X</button>
-        </td>
+  <button class="btn-ghost" style="font-size:11px; padding:3px 6px;" onclick="editEntry('${e.id}')">Edit</button>
+  <button class="btn-ghost" style="font-size:11px; padding:3px 6px;" onclick="deleteSingle('${e.id}')">X</button>
+</td>
       </tr>
     `;
   });
@@ -491,7 +550,29 @@ function deleteSingle(id){
   renderList();
   renderMonthFilter();
 }
+function editEntry(id){
+  const data = getExpenses();
+  const entry = data.find(e => e.id === id);
+  if(!entry) return;
 
+  currentEditId = id;
+
+  el("date").value        = entry.date || todayStr();
+  el("project").value     = entry.project || "";
+  el("category").value    = entry.category || "reisezeit";
+  el("customerNo").value  = entry.customerNo || "";
+  el("travelHours").value = entry.travelHours || "";
+  el("travelRate").value  = entry.travelRate || "";
+  el("km").value          = entry.km || "";
+  el("kmRate").value      = entry.kmRate || "";
+  el("amount").value      = entry.amount || "";
+  el("currency").value    = entry.currency || "EUR";
+  el("description").value = entry.description || "";
+  el("notes").value       = entry.notes || "";
+
+  el("status").textContent = "Eintrag im Bearbeitungsmodus. Änderungen speichern mit „Spesen speichern“.";
+  el("status").className   = "status status-warn";
+}
 /* Formular submit */
 el("form").addEventListener("submit", (e)=>{
   e.preventDefault();
@@ -524,13 +605,14 @@ el("form").addEventListener("submit", (e)=>{
     return;
   }
 
-  const list = getExpenses();
+   const list = getExpenses();
   const now  = new Date().toISOString();
-  const entry = {
-    id: "E" + now + Math.random().toString(16).slice(2,8),
+
+  const baseEntry = {
     date,
     project,
     category,
+    customerNo: el("customerNo").value.trim(),
     travelHours: isFinite(travelHours)?travelHours:0,
     travelRate:  isFinite(travelRate)?travelRate:0,
     km:          isFinite(km)?km:0,
@@ -538,14 +620,45 @@ el("form").addEventListener("submit", (e)=>{
     amount,
     currency,
     description,
-    notes,
-    created: now
+    notes
   };
 
-  list.push(entry);
+  let entry;
+
+  if(currentEditId){
+    // bestehenden Eintrag überschreiben
+    const idx = list.findIndex(e => e.id === currentEditId);
+    if(idx !== -1){
+      entry = {
+        ...list[idx],
+        ...baseEntry
+      };
+      list[idx] = entry;
+    } else {
+      // falls aus irgendeinem Grund nicht gefunden -> neu anlegen
+      entry = {
+        id: "E" + now + Math.random().toString(16).slice(2,8),
+        created: now,
+        ...baseEntry
+      };
+      list.push(entry);
+    }
+  } else {
+    // neuer Eintrag
+    entry = {
+      id: "E" + now + Math.random().toString(16).slice(2,8),
+      created: now,
+      ...baseEntry
+    };
+    list.push(entry);
+  }
+
   saveExpenses(list);
-  el("status").textContent = "Spesen gespeichert: " + money(amount) + " " + currency;
+  el("status").textContent = "Spesen gespeichert: " + money(amount) + " " + currency +
+    (currentEditId ? " (aktualisiert)" : "");
   el("status").className = "status status-ok";
+
+  currentEditId = null; // Bearbeitungsmodus verlassen
 
   renderList();
   renderMonthFilter();
@@ -561,13 +674,13 @@ function exportCSV(){
 
   const sep = ";";
 
-  const header = [
-    "id","date","project","category",
-    "travelHours","travelRate",
-    "km","kmRate",
-    "amount","currency",
-    "description","notes","created"
-  ];
+ const header = [
+  "id","date","project","customerNo","category",
+  "travelHours","travelRate",
+  "km","kmRate",
+  "amount","currency",
+  "description","notes","created"
+];
 
   const escapeCell = (v) => {
     if (v === null || v === undefined) v = "";
@@ -583,6 +696,7 @@ function exportCSV(){
       e.id,
       e.date,
       e.project,
+      e.customerNo || "",
       e.category,
       e.travelHours || "",
       e.travelRate  || "",
@@ -606,6 +720,219 @@ function exportCSV(){
   a.href = URL.createObjectURL(blob);
   a.download = "jarvis_spesen_excel.csv";
   a.click();
+}
+function printReport(){
+  let data = getExpenses();
+  if(!data.length){
+    alert("Keine Spesen vorhanden.");
+    return;
+  }
+
+  // wie in renderList: sortieren
+  data = data.sort((a,b)=>{
+    const da = a.date || "";
+    const db = b.date || "";
+    if(da === db) return (a.created||"").localeCompare(b.created||"");
+    return da.localeCompare(db);
+  });
+
+  const monthFilter = el("filterMonth").value;
+  const catFilter   = el("filterCategory").value;
+
+  let filtered = data.filter(e=>{
+    let ok = true;
+    if(monthFilter && e.date && e.date.slice(0,7) !== monthFilter) ok = false;
+    if(catFilter && e.category !== catFilter) ok = false;
+    return ok;
+  });
+
+  if(!filtered.length){
+    alert("Keine Spesen im aktuellen Filter.");
+    return;
+  }
+
+  const catLabelMap = {
+    reisezeit:   "Reisezeit",
+    flug:        "Flug",
+    auto:        "Auto",
+    bahn:        "Bus/Bahn",
+    hotel:       "Hotel",
+    verpflegung: "Verpflegung",
+    sonstiges:   "Sonstiges"
+  };
+
+  let total = 0;
+  let rowsHtml = "";
+
+  filtered.forEach(e=>{
+    total += Number(e.amount||0);
+
+    const catLabel = catLabelMap[e.category] || e.category || "";
+
+    const tags = [];
+    if(e.category === "reisezeit"){
+      if(e.travelHours) tags.push(`${e.travelHours} h`);
+      if(e.travelRate)  tags.push(`${money(e.travelRate)} €/h`);
+    }
+    if(e.category === "auto"){
+      if(e.km)     tags.push(`${e.km} km`);
+      if(e.kmRate) tags.push(`${money(e.kmRate)} €/km`);
+    }
+    const tagHtml = tags.length
+      ? tags.map(t=>`<span class="tag">${t}</span>`).join(" ")
+      : "";
+
+    rowsHtml += `
+      <tr>
+        <td>${e.date || ""}</td>
+        <td>${e.project || ""}</td>
+        <td>${catLabel}</td>
+        <td>
+          ${e.description || ""}
+          ${e.notes ? `<br><span style="color:#555;">${e.notes}</span>` : ""}
+          ${tagHtml ? `<br><span style="font-size:11px;color:#333;">${tagHtml}</span>` : ""}
+          ${e.customerNo ? `<br><span style="color:#555;">Kundennr: ${e.customerNo}</span>` : ""}
+        </td>
+        <td style="text-align:right;">${money(e.amount)} ${e.currency || "EUR"}</td>
+      </tr>
+    `;
+  });
+
+  const now = new Date();
+  const stand = now.toLocaleString("de-AT");
+  const monthLabel = monthFilter ? monthFilter.slice(5,7) + "." + monthFilter.slice(0,4) : "alle";
+  const catLabel = catFilter ? (catLabelMap[catFilter] || catFilter) : "alle";
+
+  const reportHtml = `
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+      <meta charset="UTF-8">
+      <title>Spesenreport</title>
+      <style>
+        body{
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+          margin:20px;
+          color:#111;
+          background:#fff;
+        }
+        h1{
+          margin:0 0 4px;
+          font-size:20px;
+        }
+        .meta{
+          font-size:12px;
+          color:#555;
+          margin-bottom:16px;
+        }
+        table{
+          width:100%;
+          border-collapse:collapse;
+          font-size:12px;
+        }
+        th, td{
+          border:1px solid #ccc;
+          padding:6px 4px;
+          vertical-align:top;
+        }
+        th{
+          background:#f3f4f6;
+          text-align:left;
+          text-transform:uppercase;
+          letter-spacing:0.7px;
+          font-size:11px;
+        }
+        tfoot td{
+          font-weight:600;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Spesen & Reisekosten</h1>
+      <div class="meta">
+        Stand: ${stand}<br>
+        Filter – Monat: ${monthLabel}, Kategorie: ${catLabel}<br>
+        Einträge: ${filtered.length}, Summe: ${money(total)} EUR
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Projekt / Kunde</th>
+            <th>Kategorie</th>
+            <th>Details</th>
+            <th>Betrag (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="text-align:right;">Gesamtsumme</td>
+            <td style="text-align:right;">${money(total)} EUR</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p style="margin-top:16px;font-size:11px;color:#666;">
+        Hinweis: Dieser Report wurde automatisch aus dem Aichmayr-System erzeugt und kann als PDF archiviert werden.
+      </p>
+    </body>
+    </html>
+  `;
+
+  const w = window.open("", "_blank");
+  w.document.open();
+  w.document.write(reportHtml);
+  w.document.close();
+  w.focus();
+  w.onload = function(){ w.print(); };
+}
+function projectCheck(){
+  const nameRaw = (el("checkProject").value || "").trim();
+  const name = nameRaw.toLowerCase();
+  const target = parseFloat(el("checkTarget").value || "0");
+  const data = getExpenses();
+
+  if(!name){
+    el("checkResult").textContent = "Bitte Projekt / Kunde eingeben.";
+    el("checkResult").className = "status status-warn";
+    return;
+  }
+
+  const list = data.filter(e =>
+    (e.project || "").trim().toLowerCase() === name
+  );
+
+  if(!list.length){
+    el("checkResult").textContent =
+      `Keine Spesen für „${nameRaw}“ gefunden.`;
+    el("checkResult").className = "status status-warn";
+    return;
+  }
+
+  const sum = list.reduce((s,e)=> s + Number(e.amount || 0), 0);
+
+  let msg = `Summe Spesen für „${nameRaw}“: ${money(sum)} EUR.`;
+
+  if(target > 0){
+    const diff = sum - target;
+    const diffAbs = Math.abs(diff);
+    const diffStr = money(diffAbs);
+
+    if(diffAbs < 0.01){
+      msg += ` – passt exakt zur Rechnung (${money(target)} EUR).`;
+    } else if(diff > 0){
+      msg += ` – ${diffStr} EUR MEHR als Rechnungsbetrag (${money(target)} EUR).`;
+    } else {
+      msg += ` – ${diffStr} EUR WENIGER als Rechnungsbetrag (${money(target)} EUR).`;
+    }
+  }
+
+  el("checkResult").textContent = msg;
+  el("checkResult").className = "status status-ok";
 }
 </script>
 </body>

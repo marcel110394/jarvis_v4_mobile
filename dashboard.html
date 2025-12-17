@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <title>JARVIS-V4 · Dashboard · Missionsstatus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    :root {
+      --color-bg: #000;
+      --color-fg: #fff;
+      --color-dark-element: #0a0a0a;
+      --color-border-subtle: rgba(255, 255, 255, 0.12);
+      --color-status-ok: #00ff77;
+      --color-status-warn: #ffcc00;
+      --color-status-crit: #ff3333;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--color-bg);
+      color: var(--color-fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+
+    header {
+      padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      border-bottom: 1px solid var(--color-border-subtle);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--color-bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .header-sub {
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: #aaa;
+    }
+
+    .btn-ghost-header {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      font-size: 11px;
+      font-weight: 600;
+      background: transparent;
+      color: var(--color-fg);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    main {
+      padding: 12px 14px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+
+    h2 {
+      margin: 16px 0 8px;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--color-border-subtle);
+      padding-bottom: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background: var(--color-dark-element);
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid var(--color-status-ok);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 70px;
+      cursor: pointer;
+    }
+
+    .card-title {
+      font-size: 11px;
+      color: #ccc;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-value {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .status-ok {
+      border-left-color: var(--color-status-ok);
+    }
+
+    .status-warn {
+      border-left-color: var(--color-status-warn);
+    }
+
+    .status-crit {
+      border-left-color: var(--color-status-crit);
+    }
+
+    .alert-list {
+      background: var(--color-dark-element);
+      border-radius: 8px;
+      padding: 0 10px;
+      margin-bottom: 20px;
+    }
+
+    .alert-entry {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .alert-entry:last-child {
+      border-bottom: none;
+    }
+
+    .alert-type {
+      font-weight: 600;
+    }
+
+    .alert-crit {
+      color: var(--color-status-crit);
+    }
+
+    .alert-warn {
+      color: var(--color-status-warn);
+    }
+
+    .alert-ok {
+      color: var(--color-status-ok);
+    }
+
+    .list-small {
+      font-size: 12px;
+      padding: 8px 0;
+    }
+
+    .list-small-item {
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      color: #bbb;
+    }
+
+    .list-small-item:last-child {
+      border-bottom: none;
+    }
+
+    .list-main {
+      color: #fff;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+      <div class="header-title">
+          <span>JARVIS-V4 · DASHBOARD</span>
+          <span class="header-sub">MISSIONSSTATUS · TOTAL OVERVIEW</span>
+        </div>
+      <button class="btn-ghost-header" onclick="location.href='jarvis_v4_darkops_mobile.html'">Jarvis Core</button>
+  </header>
+
+  <main>
+      <h2>Missions-KPIs (Key Performance Indicators)</h2>
+      <div class="grid">
+          <div id="kpi-revenue" class="metric-card" onclick="location.href='umsatz.html'">
+              <div class="card-title">Umsatz (gesamt)</div>
+              <div class="card-value">--</div>
+            </div>
+          <div id="kpi-clients" class="metric-card" onclick="location.href='kundenanlegen.html'">
+              <div class="card-title">Kunden (total)</div>
+              <div class="card-value">--</div>
+            </div>
+          <div id="kpi-hours" class="metric-card" onclick="location.href='zeiterfassung.html'">
+              <div class="card-title">Gebuchte Stunden</div>
+              <div class="card-value">--</div>
+            </div>
+          <div id="kpi-inventory-value" class="metric-card" onclick="location.href='lagerbestand.html'">
+              <div class="card-title">Lagerwert (EK)</div>
+              <div class="card-value">--</div>
+            </div>
+        </div>
+
+      <h2>System-Status & Alerts</h2>
+      <div id="alert-list" class="alert-list">
+          <div class="alert-entry"><span class="alert-type alert-ok">SYSTEM</span> Online. Warte auf Direktive.</div>
+        </div>
+
+      <h2>Kommende Termine & Zeit-Log</h2>
+      <div id="upcoming-list" class="list-small">
+          <div class="list-small-item">Lade Termine...</div>
+        </div>
+  </main>
+
+  <script>
+    /* ==========================================================
+      DASHBOARD CORE LOGIC
+      ========================================================== */
+
+    function loadData(key) {
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    }
+
+    function formatCurrency(amount) {
+      return `€ ${Number(amount).toFixed(2)}`;
+    }
+
+    function renderDashboard() {
+      /* --- 1. DATEN LADEN --- */
+      const revenueData = loadData("umsatzListe");
+      const clientData = loadData("clients");
+      const inventoryData = loadData("inventory");
+      const timeData = loadData("timeEntries");
+      const appointmentData = loadData("appointments");
+
+      /* --- 2. KPIs BERECHNEN & RENDERN --- */
+
+      // Umsatz gesamt
+      const totalRevenue = revenueData.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+      document.getElementById("kpi-revenue").querySelector(".card-value").textContent = formatCurrency(totalRevenue);
+
+      // Gesamtzahl Kunden
+      const totalClients = clientData.length;
+      document.getElementById("kpi-clients").querySelector(".card-value").textContent = totalClients;
+
+      // Gebuchte Stunden
+      const totalHours = timeData.reduce((sum, item) => sum + (Number(item.hours) || 0), 0);
+      document.getElementById("kpi-hours").querySelector(".card-value").textContent = `${totalHours.toFixed(1)} h`;
+
+      // Lagerwert (EK)
+      const totalInventoryValue = inventoryData.reduce((sum, item) => sum + ((Number(item.stock) || 0) * (Number(item.buyPrice) || 0)), 0);
+      document.getElementById("kpi-inventory-value").querySelector(".card-value").textContent = formatCurrency(totalInventoryValue);
+
+
+      /* --- 3. ALERTS & STATUS --- */
+      const alertListEl = document.getElementById("alert-list");
+      alertListEl.innerHTML = "";
+
+      let criticalAlerts = 0;
+
+      // A. Lager-Alerts
+      inventoryData.forEach(item => {
+        const stock = Number(item.stock) || 0;
+        const min = Number(item.minStock) || 0;
+        if (min > 0 && stock <= 0) {
+          alertListEl.innerHTML += `<div class="alert-entry"><span class="alert-type alert-crit">LAGER (CRIT)</span> ${item.name} (SKU: ${item.sku}) ist leer.</div>`;
+          criticalAlerts++;
+        } else if (min > 0 && stock <= min) {
+          alertListEl.innerHTML += `<div class="alert-entry"><span class="alert-type alert-warn">LAGER (WARN)</span> ${item.name} ist niedrig (${stock}/${min}).</div>`;
+        }
+      });
+
+      // B. Zeit-Alerts (Z.B. mehr als 24h nicht gebucht)
+      const lastLog = timeData.length > 0 ? new Date(timeData[timeData.length - 1].created) : null;
+      if (lastLog && (Date.now() - lastLog.getTime()) > (24 * 60 * 60 * 1000)) {
+        alertListEl.innerHTML += `<div class="alert-entry"><span class="alert-type alert-warn">TIME LOG</span> Keine Buchung in den letzten 24h erfasst.</div>`;
+      }
+
+      // C. Gesamtstatus-LED anpassen
+      if (criticalAlerts > 0) {
+        document.getElementById("kpi-inventory-value").className = "metric-card status-crit";
+      } else if (alertListEl.children.length > 0) {
+        // Falls es Warnungen gibt, aber keine kritischen Fehler
+        document.getElementById("kpi-inventory-value").className = "metric-card status-warn";
+      } else {
+        // Alles OK
+        document.getElementById("kpi-inventory-value").className = "metric-card status-ok";
+      }
+
+      // Abschließende System-Meldung, wenn keine anderen Alerts
+      if (alertListEl.children.length === 0) {
+        alertListEl.innerHTML = `<div class="alert-entry"><span class="alert-type alert-ok">SYSTEM</span> Alle Subsysteme (CRM, Lager, Zeit) melden Green Status.</div>`;
+      }
+
+
+      /* --- 4. KOMMENDE TERMINE --- */
+      const upcomingEl = document.getElementById("upcoming-list");
+      upcomingEl.innerHTML = "";
+
+      const now = new Date();
+
+      // Sortieren nach Datum und Zeit
+      const sortedAppointments = appointmentData
+        .map(t => ({ ...t, timestamp: new Date(t.date + "T" + (t.time || "00:00") + ":00").getTime() }))
+        .filter(t => t.timestamp >= now.getTime()) // Nur zukünftige Termine
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .slice(0, 5); // Nur die nächsten 5
+
+      if (sortedAppointments.length === 0) {
+        upcomingEl.innerHTML = `<div class="list-small-item">Keine Termine in den nächsten Tagen erfasst.</div>`;
+      } else {
+        sortedAppointments.forEach(t => {
+          const dateStr = new Date(t.timestamp).toLocaleDateString("de-DE", { day: '2-digit', month: '2-digit' });
+          const timeStr = t.time || "ganztägig";
+          upcomingEl.innerHTML += `
+          <div class="list-small-item">
+            <span class="list-main">${t.title}</span>
+            <span>${dateStr} · ${timeStr}</span>
+          </div>
+        `;
+        });
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", renderDashboard);
+
+    /* Dashboard bei Fokus neu laden (wenn man von einem Untermodul zurückkommt) */
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) {
+        renderDashboard();
+      }
+    });
+
+  </script>
+</body>
+
+</html>

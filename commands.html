@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Jarvis · Befehlsübersicht</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    :root{
+      --bg:#000;
+      --card:#020617;
+      --border:1px solid rgba(148,163,184,0.35);
+      --accent:#38bdf8;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --radius:14px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    header{
+      padding:14px 16px;
+      padding-top:calc(14px + env(safe-area-inset-top));
+      border-bottom:1px solid rgba(255,255,255,0.12);
+      font-size:14px;
+      font-weight:600;
+      letter-spacing:1.5px;
+      text-transform:uppercase;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#000;
+    }
+    .btn-ghost{
+      background:transparent;
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.4);
+      border-radius:8px;
+      padding:6px 10px;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    main{
+      padding:12px 14px;
+      padding-bottom:calc(16px + env(safe-area-inset-bottom));
+      max-width:1000px;
+      margin:0 auto;
+      width:100%;
+    }
+    h1{
+      margin:0;
+      font-size:18px;
+    }
+    .sub{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:4px;
+      margin-bottom:10px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:10px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      border:var(--border);
+      padding:10px 10px 12px;
+    }
+    .card h2{
+      margin:0 0 4px;
+      font-size:13px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+    }
+    .card p{
+      margin:0 0 6px;
+      font-size:11px;
+      color:var(--muted);
+    }
+    ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+      font-size:12px;
+    }
+    li{
+      margin-bottom:6px;
+    }
+    .cmd{
+      font-family:monospace;
+      font-size:11px;
+      background:#020617;
+      border-radius:999px;
+      padding:2px 7px;
+      border:1px solid rgba(148,163,184,0.6);
+      display:inline-block;
+      margin-bottom:2px;
+    }
+    .hint{
+      font-size:11px;
+      color:var(--muted);
+    }
+    .tag{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      color:var(--accent);
+    }
+    footer{
+      padding:8px 14px calc(10px + env(safe-area-inset-bottom));
+      font-size:10px;
+      color:var(--muted);
+      border-top:1px solid rgba(15,23,42,0.8);
+      margin-top:auto;
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Jarvis · Befehlsübersicht</h1>
+  <button class="btn-ghost" onclick="location.href='jarvis_v4_darkops_mobile.html'">Zurück zu Jarvis</button>
+</header>
+
+<main>
+  <div class="sub">
+    Kurze Übersicht, was du Jarvis sagen kannst. Alle Befehle laufen über den KI-Core und landen in den
+    Modulen (Kunden, Umsatz, Zeit, Mahnwesen, Projekte, Logbuch).
+  </div>
+
+  <div class="grid">
+    <!-- Kunden -->
+    <div class="card">
+      <h2>Kunden anlegen</h2>
+      <p><span class="tag">Modul</span> Kundenverwaltung · Intent: <b>open_module</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Lege Kunde (Trafik Steinweg) (Steinweg 20b) (4050) (Traun) (Max Mustermann) (office@trafik.at) (+43 660 123456)</div>
+          <div class="hint">→ Öffnet Kundenmaske mit allen Feldern vorausgefüllt (Name, Adresse, PLZ, Ort, Ansprechpartner, E-Mail, Telefon).</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Kunden</div>
+          <div class="hint">→ springt direkt in die Kundenübersicht.</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Umsatz / Projekte -->
+    <div class="card">
+      <h2>Umsatz & Großprojekte</h2>
+      <p><span class="tag">Modul</span> Umsatz / Großprojekte · Intents: <b>add_revenue</b>, <b>open_big_projects</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Umsatz 1500 für Tesla buchen</div>
+          <div class="hint">→ Eintrag in <i>Umsatz</i> mit Client „Tesla“.</div>
+        </li>
+        <li>
+          <div class="cmd">Umsatz 3000 Euro auf Großprojekt P2025-ALPHA für ACME</div>
+          <div class="hint">→ Umsatz mit Projekt-ID verknüpft.</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Großprojekte</div>
+          <div class="hint">→ Öffnet <i>Großprojekte</i> (Projekt-Board).</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Zeiterfassung -->
+    <div class="card">
+      <h2>Zeiterfassung</h2>
+      <p><span class="tag">Modul</span> Zeit · Intent: <b>add_time_entry</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Buche 2,5 Stunden für ACME zum Satz 140</div>
+          <div class="hint">→ Legt einen Zeiteintrag an (Projekt, Stunden, Stundensatz).</div>
+        </li>
+        <li>
+          <div class="cmd">Buche 5 Stunden auf Projekt P2025-ALPHA zum Satz 160</div>
+          <div class="hint">→ Zeitbuchung direkt auf eine Projekt-ID.</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Zeit</div>
+          <div class="hint">→ Springt in das Zeiterfassungs-Modul.</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Termine -->
+    <div class="card">
+      <h2>Termine</h2>
+      <p><span class="tag">Modul</span> Termine · Intent: <b>create_appointment</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Termin 21.11.2025 14:00 Meeting mit Trafik Steinweg</div>
+          <div class="hint">→ Legt einen Kalendereintrag an (Datum, Uhrzeit, Titel).</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Termine</div>
+          <div class="hint">→ Terminübersicht öffnen.</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Mahnwesen -->
+    <div class="card">
+      <h2>Mahnwesen</h2>
+      <p><span class="tag">Modul</span> Mahnwesen · Intent: <b>create_dunning</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Schreibe erste Mahnung für Rechnung RE-2025-004 über 1500 Euro an Trafik Steinweg, fällig am 10.11.2025</div>
+          <div class="hint">→ erzeugt Mahn-Datensatz (Level 1) und öffnet das Mahnwesen.</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Mahnwesen</div>
+          <div class="hint">→ Liste aller Mahnungen.</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Lager / Spesen / Umsatz -->
+    <div class="card">
+      <h2>Lager · Spesen · Umsatz</h2>
+      <p><span class="tag">Module</span> Lager / Spesen / Umsatz · Intents: <b>scan_item</b>, <b>add_revenue</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Scanne bitte den nächsten Artikel ins Lager</div>
+          <div class="hint">→ Aktiviert Lager-Scan-Modus und öffnet Lagerbestand.</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Lager</div>
+          <div class="hint">→ Lagerbestands-UI.</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Spesen</div>
+          <div class="hint">→ Spesen-Modul (manuelle Eingabe).</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Umsatz</div>
+          <div class="hint">→ Umsatz-Dashboard (Rechnungen-Summen).</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Dashboard / Logbuch -->
+    <div class="card">
+      <h2>Dashboard · Logbuch</h2>
+      <p><span class="tag">Module</span> Dashboard / Logbuch · Intents: <b>open_module</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Öffne Dashboard</div>
+          <div class="hint">→ Gesamtübersicht (KPIs, Links).</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Logbuch</div>
+          <div class="hint">→ System-Logbuch (missionLogs, Umsatz-Events, Backups).</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Standard-Kommandos -->
+    <div class="card">
+      <h2>Standard · Hilfe</h2>
+      <p><span class="tag">Core</span> KI-Core · Intents: <b>greeting</b>, <b>help</b>, <b>fallback_command</b></p>
+      <ul>
+        <li>
+          <div class="cmd">Servus Jarvis</div>
+          <div class="hint">→ Kurze Status-Antwort (Online / Ready).</div>
+        </li>
+        <li>
+          <div class="cmd">Hilfe</div>
+          <div class="hint">→ Jarvis beschreibt kurz, was er alles kann.</div>
+        </li>
+        <li>
+          <div class="cmd">Öffne Befehle</div>
+          <div class="hint">→ Diese Befehlsübersicht (wenn du später im Backend „commands.html“ mit mappst).</div>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div>Jarvis OS · Commands Module V1.0</div>
+  <div>Local Only · Voice-First konzipiert</div>
+</footer>
+
+</body>
+</html>
